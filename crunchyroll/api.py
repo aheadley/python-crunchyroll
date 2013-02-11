@@ -65,6 +65,9 @@ class AndroidApi(ApiInterface):
             'auth': auth,
             'user': None,
         }
+        # for debugging
+        self._last_response = None
+        # dunno what these are for yet
         self._session_ops = []
 
     def _get_locale(self):
@@ -112,6 +115,7 @@ class AndroidApi(ApiInterface):
             if is_error:
                 raise ApiError('%s: %s' % (resp.json['code'], resp.json['message']))
             else:
+                self._last_response = resp
                 data = resp.json['data']
                 self._do_post_request_tasks(data)
                 return data
@@ -184,7 +188,7 @@ class AndroidApi(ApiInterface):
         Get the list of series, default limit seems to be 20.
 
         @param str media_type   one of CR_MEDIA_TYPE_*
-        @param str filter       one of CR_SORT_*
+        @param str filter       one of CR_FILTER_*
         @param int offset       pick the index to start at, is not multiplied
                                     by limit or anything
         @param int limit        does not seem to have an upper bound
