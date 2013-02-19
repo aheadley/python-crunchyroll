@@ -42,3 +42,8 @@ Example usage:
  u'Blast of Tempest',
  u'The Pet Girl of Sakurasou']
 ~~~~
+
+### LICENSE
+
+This project is licensed under GPLv2+, I will get around to adding the license
+to the repo... eventually.
