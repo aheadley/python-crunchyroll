@@ -6,9 +6,28 @@ import requests
 
 from .constants import *
 
-class ApiException(Exception): pass
-class ApiBadResponseException(ApiException): pass
-class ApiError(ApiException): pass
+class ApiException(Exception):
+    """Base class for exceptions thrown by the API classes
+    """
+    pass
+
+class ApiNetworkException(ApiException):
+    """We couldn't talk to the API because the internet tubes are clogged or
+    something
+    """
+    pass
+
+class ApiBadResponseException(ApiException):
+    """We got a response from the API but it didn't make any sense or we don't
+    know how to handle it
+    """
+    pass
+
+class ApiError(ApiException):
+    """API gave us an error response (that we know how to parse)
+    """
+    pass
+
 
 class ApiInterface(object):
     """This will be the basis for the shared API interfaces once the Ajax and
@@ -21,12 +40,16 @@ class AjaxApi(ApiInterface):
     """
     pass
 
-class WebApi(ApiInterface):
-    """Screen scraping API
+class ScraperApi(ApiInterface):
+    """HTML scraping interface
     """
     pass
 
 def make_api_method(req_method, secure=True, version=0):
+    """Turn an API class's method into a function that builds the request,
+    sends it, then passes the response to the actual method. Should be used
+    as a decorator.
+    """
     def outer_func(func):
         def inner_func(self, **kwargs):
             req_url = self._build_request_url(secure, func.__name__, version)
@@ -37,14 +60,22 @@ def make_api_method(req_method, secure=True, version=0):
         return inner_func
     return outer_func
 
+# TODO: should rename this to MobileApi or AppApi, I doubt the iPhone API is
+# different (is there even an iPhone app?)
 class AndroidApi(ApiInterface):
-    """
+    """Android (and probably iPhone) API interface
+
+    Optional API method parameters are marked as such, or have a default
+    value specified.
     """
 
     METHOD_GET      = 'GET'
     METHOD_POST     = 'POST'
 
     def __init__(self, session_id=None, auth=None):
+        """Init object, optionally with previously stored session and/or auth
+        tokens
+        """
         self._connector = requests.Session()
         self._request_headers = {
             'X-Android-Device-Manufacturer':
@@ -53,6 +84,9 @@ class AndroidApi(ApiInterface):
                 ANDROID_DEVICE_MODEL,
             'X-Android-Device-Product':
                 ANDROID_DEVICE_PRODUCT,
+            # TODO: maybe setting this to '1' will give us higher res
+            # videos and/or soft-subs? there were some other headers that need
+            # to be sent if this is '1' though, needs testing
             'X-Android-Device-Is-GoogleTV': '0',
             'X-Android-SDK': ANDROID_SDK_VERSION,
             'X-Android-Release': ANDROID_RELEASE_VERSION,
@@ -67,13 +101,20 @@ class AndroidApi(ApiInterface):
         }
         # for debugging
         self._last_response = None
-        # dunno what these are for yet
+        # dunno what these are for yet, seems to be a way to tell the client
+        # to do something
         self._session_ops = []
 
     def _get_locale(self):
+        """Get the current locale with dashes (-) and underscores (_) removed
+
+        Ex: en-US -> enUS
+        """
         return locale.getdefaultlocale()[0].replace('_', '').replace('-', '')
 
     def _get_base_params(self):
+        """Get the params that will be included with every request
+        """
         base_params = {
             'locale':       self._get_locale(),
             'device_id':    ANDROID_DEVICE_ID,
@@ -81,12 +122,17 @@ class AndroidApi(ApiInterface):
             'access_token': CR_ACCESS_TOKEN,
             'version':      ANDROID_APP_CODE,
         }
-        for key, value in self._state_params.iteritems():
-            if value is not None:
-                base_params[key] = value
+        base_params.update(dict(k, v) \
+            for k, v in self._state_params.iteritems() \
+                if v is not None)
         return base_params
 
     def _do_post_request_tasks(self, response_data):
+        """Handle actions that need to be done with every response
+
+        I'm not sure what these session_ops are actually used for yet, seems to
+        be a way to tell the client to do *something* if needed.
+        """
         if 'ops' in response_data:
             try:
                 self._session_ops.extend(response_data.get('ops', []))
@@ -95,17 +141,21 @@ class AndroidApi(ApiInterface):
                 pass
 
     def _build_request(self, method, url, params=None):
+        """Build a function to do an API request
+
+        "We have to go deeper" or "It's functions all the way down!"
+        """
         full_params = self._get_base_params()
         if params is not None:
             full_params.update(params)
-        if method == self.METHOD_GET:
-            request_func = lambda u, d: self._connector.get(u, params=d,
-                headers=self._request_headers)
-        elif method == self.METHOD_POST:
-            request_func = lambda u, d: self._connector.post(u, data=d,
-                headers=self._request_headers)
-        else:
-            raise Exception('Invalid request method')
+        try:
+            request_func = lambda u, d: \
+                getattr(self._connector, method.lower())(u, params=d,
+                    headers=self._request_headers)
+        except AttributeError:
+            raise ApiException('Invalid request method')
+        # TODO: need to catch a network here and raise as ApiNetworkException
+
         def do_request():
             resp = request_func(url, full_params)
             try:
@@ -122,6 +172,8 @@ class AndroidApi(ApiInterface):
         return do_request
 
     def _build_request_url(self, secure, api_method, version):
+        """Build a URL for a API method request
+        """
         if secure:
             proto = CR_API_SECURE_PROTO
         else:
@@ -139,7 +191,9 @@ class AndroidApi(ApiInterface):
         This is the only method that doesn't go over HTTPS (for some reason). Must
         be called before anything else or you get an "unauthorized request" error.
 
-        @param int duration
+        I don't know what the duration param does in any of these methods
+
+        @param int duration (optional)
         """
         self._state_params['session_id'] = response['session_id']
         self._state_params['country_code'] = response['country_code']
@@ -158,7 +212,7 @@ class AndroidApi(ApiInterface):
 
         @param str account
         @param str password
-        @param int duration
+        @param int duration (optional)
         """
         self._state_params['auth'] = response['auth']
 
@@ -167,8 +221,6 @@ class AndroidApi(ApiInterface):
         """
         Auth param is not actually required, will be included with requests
         automatically after logging in
-
-        @param str auth
         """
         self._state_params['auth'] = None
 
@@ -178,7 +230,7 @@ class AndroidApi(ApiInterface):
         This does not appear to be used, might refresh auth token though.
 
         @param str auth
-        @param int duration
+        @param int duration (optional)
         """
         pass
 
@@ -188,10 +240,14 @@ class AndroidApi(ApiInterface):
         Get the list of series, default limit seems to be 20.
 
         @param str media_type   one of CR_MEDIA_TYPE_*
-        @param str filter       one of CR_FILTER_*
-        @param int offset       pick the index to start at, is not multiplied
+        @param str filter       one of CR_FILTER_*, (optional)
+        @param int offset=0     pick the index to start at, is not multiplied
                                     by limit or anything
-        @param int limit        does not seem to have an upper bound
+        @param int limit=20     does not seem to have an upper bound
+        @param str fields       comma separated list of CR_FIELD_* for extra
+                                    info, this must be used to get things like
+                                    video links which aren't in the default
+                                    field set (optional)
         """
         pass
 
@@ -200,11 +256,18 @@ class AndroidApi(ApiInterface):
         """
         Get the list of videos for a series
 
+        Only collection_id *or* series_id should be given, the API will
+        probably give an error if either both or none are given
+
         @param int collection_id
         @param int series_id
-        @param str sort
-        @param int offset
-        @param int limit
+        @param str sort=CR_FILTER_POPULAR
+        @param int offset=0
+        @param int limit=20
+        @param str fields       comma separated list of CR_FIELD_* for extra
+                                    info, this must be used to get things like
+                                    video links which aren't in the default
+                                    field set (optional)
         """
         pass
 
@@ -213,11 +276,20 @@ class AndroidApi(ApiInterface):
         """
         Get info about a specific video
 
+        Same deal as `list_media`, only pass collection_id or series_id, not
+        both or none
+
         @param int media_id
         @param int collection_id
         @param int series_id
+        @param str fields       comma separated list of CR_FIELD_* for extra
+                                    info, this must be used to get things like
+                                    video links which aren't in the default
+                                    field set (optional)
         """
         pass
+
+    """ ** METHODS PAST THIS POINT ARE UNTESTED ** """
 
     @make_api_method(METHOD_POST)
     def add_to_queue(self, response):
@@ -229,7 +301,7 @@ class AndroidApi(ApiInterface):
     @make_api_method(METHOD_GET)
     def categories(self, response):
         """
-        @param str media_type
+        @param str media_type   probably should be one of CR_MEDIA_TYPE_*
         """
         pass
 

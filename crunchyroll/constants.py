@@ -14,17 +14,19 @@ CR_PREMIUM_TYPE_DRAMA   = '4'
 CR_MEDIA_TYPE_ANIME     = 'anime'
 CR_MEDIA_TYPE_DRAMA     = 'drama'
 
+# dunno what these are for yet
 CR_PREMIUM_FLAG_ANIME       = 'anime'
 CR_PREMIUM_FLAG_DRAMA       = 'drama'
 CR_PREMIUM_FLAG_TAISENG     = 'taiseng'
+
 # filter flags
 CR_FILTER_POPULAR           = 'popular'
 CR_FILTER_SIMULCAST         = 'simulcast'
 CR_FILTER_UPDATED           = 'updated'
 CR_FILTER_ALPHA             = 'alpha'
 CR_FILTER_NEWEST            = 'newest'
-CR_FILTER_PREFIX            = 'prefix:'
-CR_FILTER_TAG               = 'tag:'
+CR_FILTER_PREFIX            = 'prefix:' # search maybe?
+CR_FILTER_TAG               = 'tag:' # need to find a list of tags
 
 # these are apparently like database fields or something that you can add
 # to the list_series, list_media, and info methods to get additional or only
@@ -60,15 +62,17 @@ CR_FIELD_IMAGE_WIDESTAR_URL         = 'image.widestar_url'
 CR_FIELD_IMAGE_LARGE_URL            = 'image.large_url'
 CR_FIELD_IMAGE_FULL_URL             = 'image.full_url'
 
+# eventually these should be used to identify this library so CR can get
+# usage statistics about people using third-party apps or something, maybe
 ANDROID_DEVICE_MANUFACTURER = 'unknown'
 ANDROID_DEVICE_MODEL        = 'google_sdk'
 ANDROID_DEVICE_PRODUCT      = 'google_sdk'
-# this should probably be replaced with a random UUIDv4 in api init
+ANDROID_USER_AGENT          = 'Dalvik/1.6.0 (Linux; U; Android 4.2; google_sdk Build/JB_MR1)'
+# this should probably be replaced with a UUIDv4 in api init
 ANDROID_DEVICE_ID           = '00000000-18c4-ade8-ffff-ffff99d603a9'
 ANDROID_SDK_VERSION         = '17'
 ANDROID_RELEASE_VERSION     = '4.2'
 ANDROID_APP_CODE            = '66'
 ANDROID_APP_VERSION_NAME    = '0.7.9'
 ANDROID_APP_PACKAGE         = 'com.crunchyroll.crunchyroid'
-ANDROID_USER_AGENT          = 'Dalvik/1.6.0 (Linux; U; Android 4.2; google_sdk Build/JB_MR1)'
 
