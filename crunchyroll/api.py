@@ -5,43 +5,11 @@ import functools
 import requests
 
 from .constants import ANDROID
-
-class ApiException(Exception):
-    """Base class for exceptions thrown by the API classes
-    """
-    pass
-
-class ApiNetworkException(ApiException):
-    """We couldn't talk to the API because the internet tubes are clogged or
-    something
-    """
-    pass
-
-class ApiBadResponseException(ApiException):
-    """We got a response from the API but it didn't make any sense or we don't
-    know how to handle it
-    """
-    pass
-
-class ApiError(ApiException):
-    """API gave us an error response (that we know how to parse)
-    """
-    pass
-
+from .errors import *
 
 class ApiInterface(object):
     """This will be the basis for the shared API interfaces once the Ajax and
     Web APIs have been implemented
-    """
-    pass
-
-class AjaxApi(ApiInterface):
-    """AJAX call API
-    """
-    pass
-
-class ScraperApi(ApiInterface):
-    """HTML scraping interface
     """
     pass
 
@@ -67,6 +35,10 @@ class AndroidApi(ApiInterface):
 
     Optional API method parameters are marked as such, or have a default
     value specified.
+
+    Only hard-subbed and SD streams are supported, HD/soft-subs are simply
+    not available through the API.
+    @link http://www.crunchyroll.com/forumtopic-777139/are-streams-hd-on-the-new-kindle-fire-hd?fpid=41205823
     """
 
     METHOD_GET      = 'GET'
@@ -427,3 +399,13 @@ class AndroidApi(ApiInterface):
         @param int video_encode_id
         """
         pass
+
+class AjaxApi(ApiInterface):
+    """AJAX call API
+    """
+    pass
+
+class ScraperApi(ApiInterface):
+    """HTML scraping interface
+    """
+    pass
