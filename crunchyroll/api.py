@@ -4,7 +4,7 @@ import functools
 
 import requests
 
-from .constants import *
+from .constants import ANDROID
 
 class ApiException(Exception):
     """Base class for exceptions thrown by the API classes
@@ -79,20 +79,18 @@ class AndroidApi(ApiInterface):
         self._connector = requests.Session()
         self._request_headers = {
             'X-Android-Device-Manufacturer':
-                ANDROID_DEVICE_MANUFACTURER,
+                ANDROID.DEVICE_MANUFACTURER,
             'X-Android-Device-Model':
-                ANDROID_DEVICE_MODEL,
+                ANDROID.DEVICE_MODEL,
             'X-Android-Device-Product':
-                ANDROID_DEVICE_PRODUCT,
-            # TODO: maybe setting this to '1' will give us higher res
-            # videos and/or soft-subs? there were some other headers that need
-            # to be sent if this is '1' though, needs testing
-            'X-Android-Device-Is-GoogleTV': '0',
-            'X-Android-SDK': ANDROID_SDK_VERSION,
-            'X-Android-Release': ANDROID_RELEASE_VERSION,
-            'X-Android-Application-Version-Code': ANDROID_APP_CODE,
-            'X-Android-Application-Version-Name': ANDROID_APP_PACKAGE,
-            'User-Agent': ANDROID_USER_AGENT,
+                ANDROID.DEVICE_PRODUCT,
+            # changing this to '1' doesn't seem to have an effect
+            'X-Android-Device-Is-GoogleTV': '1',
+            'X-Android-SDK': ANDROID.SDK_VERSION,
+            'X-Android-Release': ANDROID.RELEASE_VERSION,
+            'X-Android-Application-Version-Code': ANDROID.APP_CODE,
+            'X-Android-Application-Version-Name': ANDROID.APP_PACKAGE,
+            'User-Agent': ANDROID.USER_AGENT,
         }
         self._state_params = {
             'session_id': session_id,
@@ -117,14 +115,14 @@ class AndroidApi(ApiInterface):
         """
         base_params = {
             'locale':       self._get_locale(),
-            'device_id':    ANDROID_DEVICE_ID,
-            'device_type':  ANDROID_APP_PACKAGE,
-            'access_token': CR_ACCESS_TOKEN,
-            'version':      ANDROID_APP_CODE,
+            'device_id':    ANDROID.DEVICE_ID,
+            'device_type':  ANDROID.APP_PACKAGE,
+            'access_token': ANDROID.ACCESS_TOKEN,
+            'version':      ANDROID.APP_CODE,
         }
-        base_params.update(dict(k, v) \
+        base_params.update(dict((k, v) \
             for k, v in self._state_params.iteritems() \
-                if v is not None)
+                if v is not None))
         return base_params
 
     def _do_post_request_tasks(self, response_data):
@@ -159,14 +157,18 @@ class AndroidApi(ApiInterface):
         def do_request():
             resp = request_func(url, full_params)
             try:
-                is_error = resp.json['error']
+                resp_json = resp.json()
+            except TypeError:
+                resp_json = resp.json
+            try:
+                is_error = resp_json['error']
             except TypeError:
                 raise ApiBadResponseException(resp.content)
             if is_error:
-                raise ApiError('%s: %s' % (resp.json['code'], resp.json['message']))
+                raise ApiError('%s: %s' % (resp_json['code'], resp_json['message']))
             else:
                 self._last_response = resp
-                data = resp.json['data']
+                data = resp_json['data']
                 self._do_post_request_tasks(data)
                 return data
         return do_request
@@ -175,10 +177,10 @@ class AndroidApi(ApiInterface):
         """Build a URL for a API method request
         """
         if secure:
-            proto = CR_API_SECURE_PROTO
+            proto = ANDROID.PROTOCOL_SECURE
         else:
-            proto = CR_API_INSECURE_PROTO
-        req_url = CR_API_URL.format(
+            proto = ANDROID.PROTOCOL_INSECURE
+        req_url = ANDROID.API_URL.format(
             protocol=proto,
             api_method=api_method,
             version=version
@@ -239,12 +241,12 @@ class AndroidApi(ApiInterface):
         """
         Get the list of series, default limit seems to be 20.
 
-        @param str media_type   one of CR_MEDIA_TYPE_*
-        @param str filter       one of CR_FILTER_*, (optional)
+        @param str media_type   one of ANDROID.MEDIA_TYPE_*
+        @param str filter       one of ANDROID.FILTER_*, (optional)
         @param int offset=0     pick the index to start at, is not multiplied
                                     by limit or anything
         @param int limit=20     does not seem to have an upper bound
-        @param str fields       comma separated list of CR_FIELD_* for extra
+        @param str fields       comma separated list of ANDROID.FIELD.* for extra
                                     info, this must be used to get things like
                                     video links which aren't in the default
                                     field set (optional)
@@ -261,10 +263,10 @@ class AndroidApi(ApiInterface):
 
         @param int collection_id
         @param int series_id
-        @param str sort=CR_FILTER_POPULAR
+        @param str sort=ANDROID.FILTER_POPULAR
         @param int offset=0
         @param int limit=20
-        @param str fields       comma separated list of CR_FIELD_* for extra
+        @param str fields       comma separated list of ANDROID.FIELD.* for extra
                                     info, this must be used to get things like
                                     video links which aren't in the default
                                     field set (optional)
@@ -282,7 +284,7 @@ class AndroidApi(ApiInterface):
         @param int media_id
         @param int collection_id
         @param int series_id
-        @param str fields       comma separated list of CR_FIELD_* for extra
+        @param str fields       comma separated list of ANDROID.FIELD.* for extra
                                     info, this must be used to get things like
                                     video links which aren't in the default
                                     field set (optional)
@@ -301,7 +303,7 @@ class AndroidApi(ApiInterface):
     @make_api_method(METHOD_GET)
     def categories(self, response):
         """
-        @param str media_type   probably should be one of CR_MEDIA_TYPE_*
+        @param str media_type   probably should be one of ANDROID.MEDIA_TYPE_*
         """
         pass
 
