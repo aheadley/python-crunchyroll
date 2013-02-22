@@ -78,9 +78,12 @@ class ANDROID(API):
         IMAGE_FULL_URL              = 'image.full_url'
 
 class AJAX(API):
-    # not used yet
-    PREMIUM_TYPE_ANIME  = '2'
-    PREMIUM_TYPE_DRAMA  = '4'
+    API_DOMAIN                  = 'www.' + API.BASE_DOMAIN
+    API_URL                     = '{protocol}://' + API_DOMAIN + '/xml/'
+
+    HEADER_REFERRER     = 'http://static.ak.crunchyroll.com/flash/20130201144858.bd8118f7c58d1da788d88782497e30a4/StandardVideoPlayer.swf'
+    HEADER_ORIGIN       = 'http://static.ak.crunchyroll.com'
+    HEADER_USER_AGENT   = ANDROID.USER_AGENT
 
 class WEB(API):
     pass
