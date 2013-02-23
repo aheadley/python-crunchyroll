@@ -1,22 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import json
 import locale
-import functools
 
 import requests
 
-from .constants import ANDROID, AJAX
+from ..api import ApiInterface
+from ..constants import ANDROID
 from .errors import *
 
-class ApiInterface(object):
-    """This will be the basis for the shared API interfaces once the Ajax and
-    Web APIs have been implemented
-    """
-    pass
-
-def make_api_method(req_method, secure=True, version=0):
-    """Turn an API class's method into a function that builds the request,
+def make_android_api_method(req_method, secure=True, version=0):
+    """Turn an AndroidApi's method into a function that builds the request,
     sends it, then passes the response to the actual method. Should be used
     as a decorator.
     """
@@ -161,7 +154,7 @@ class AndroidApi(ApiInterface):
         )
         return req_url
 
-    @make_api_method(METHOD_POST, False)
+    @make_android_api_method(METHOD_POST, False)
     def start_session(self, response):
         """
         This is the only method that doesn't go over HTTPS (for some reason). Must
@@ -174,14 +167,14 @@ class AndroidApi(ApiInterface):
         self._state_params['session_id'] = response['session_id']
         self._state_params['country_code'] = response['country_code']
 
-    @make_api_method(METHOD_POST)
+    @make_android_api_method(METHOD_POST)
     def end_session(self, response):
         """
         Should probably be called after ``logout``
         """
         self._state_params['session_id'] = None
 
-    @make_api_method(METHOD_POST)
+    @make_android_api_method(METHOD_POST)
     def login(self, response):
         """
         Login using email/username and password, used to get the auth token
@@ -192,7 +185,7 @@ class AndroidApi(ApiInterface):
         """
         self._state_params['auth'] = response['auth']
 
-    @make_api_method(METHOD_POST)
+    @make_android_api_method(METHOD_POST)
     def logout(self, response):
         """
         Auth param is not actually required, will be included with requests
@@ -200,7 +193,7 @@ class AndroidApi(ApiInterface):
         """
         self._state_params['auth'] = None
 
-    @make_api_method(METHOD_POST)
+    @make_android_api_method(METHOD_POST)
     def authenticate(self, response):
         """
         This does not appear to be used, might refresh auth token though.
@@ -210,7 +203,7 @@ class AndroidApi(ApiInterface):
         """
         pass
 
-    @make_api_method(METHOD_GET)
+    @make_android_api_method(METHOD_GET)
     def list_series(self, response):
         """
         Get the list of series, default limit seems to be 20.
@@ -227,7 +220,7 @@ class AndroidApi(ApiInterface):
         """
         pass
 
-    @make_api_method(METHOD_GET)
+    @make_android_api_method(METHOD_GET)
     def list_media(self, response):
         """
         Get the list of videos for a series
@@ -247,7 +240,7 @@ class AndroidApi(ApiInterface):
         """
         pass
 
-    @make_api_method(METHOD_GET)
+    @make_android_api_method(METHOD_GET)
     def info(self, response):
         """
         Get info about a specific video
@@ -267,28 +260,28 @@ class AndroidApi(ApiInterface):
 
     """ ** METHODS PAST THIS POINT ARE UNTESTED ** """
 
-    @make_api_method(METHOD_POST)
+    @make_android_api_method(METHOD_POST)
     def add_to_queue(self, response):
         """
         @param int series_id
         """
         pass
 
-    @make_api_method(METHOD_GET)
+    @make_android_api_method(METHOD_GET)
     def categories(self, response):
         """
         @param str media_type   probably should be one of ANDROID.MEDIA_TYPE_*
         """
         pass
 
-    @make_api_method(METHOD_GET)
+    @make_android_api_method(METHOD_GET)
     def queue(self, response):
         """
         @param str media_types
         """
         pass
 
-    @make_api_method(METHOD_GET)
+    @make_android_api_method(METHOD_GET)
     def recently_watched(self, response):
         """
         @param str media_types
@@ -297,14 +290,14 @@ class AndroidApi(ApiInterface):
         """
         pass
 
-    @make_api_method(METHOD_POST)
+    @make_android_api_method(METHOD_POST)
     def remove_from_queue(self, response):
         """
         @param int series_id
         """
         pass
 
-    @make_api_method(METHOD_POST)
+    @make_android_api_method(METHOD_POST)
     def signup(self, response):
         """
         @param str email
@@ -316,7 +309,7 @@ class AndroidApi(ApiInterface):
         """
         pass
 
-    @make_api_method(METHOD_POST)
+    @make_android_api_method(METHOD_POST)
     def free_trial_start(self, response):
         """
         @param str sku
@@ -335,61 +328,61 @@ class AndroidApi(ApiInterface):
         """
         pass
 
-    @make_api_method(METHOD_POST)
+    @make_android_api_method(METHOD_POST)
     def forgot_password(self, response):
         """
         @param str email
         """
         pass
 
-    @make_api_method(METHOD_GET)
+    @make_android_api_method(METHOD_GET)
     def free_trial_info(self, response):
         """
         """
         pass
 
-    @make_api_method(METHOD_GET)
+    @make_android_api_method(METHOD_GET)
     def list_ads(self, response):
         """
         @param int media_id
         """
         pass
 
-    @make_api_method(METHOD_POST)
+    @make_android_api_method(METHOD_POST)
     def log_ad_requested(self, response):
         """
         @param str ad_network
         """
         pass
 
-    @make_api_method(METHOD_POST)
+    @make_android_api_method(METHOD_POST)
     def log_ad_served(self, response):
         """
         @param str ad_network
         """
         pass
 
-    @make_api_method(METHOD_POST)
+    @make_android_api_method(METHOD_POST)
     def log_first_launch(self, response):
         """
         """
         pass
 
-    @make_api_method(METHOD_POST)
+    @make_android_api_method(METHOD_POST)
     def log_impression(self, response):
         """
         @param str view
         """
         pass
 
-    @make_api_method(METHOD_POST)
+    @make_android_api_method(METHOD_POST)
     def log_install_referrer(self, response):
         """
         @param str referrer
         """
         pass
 
-    @make_api_method(METHOD_POST)
+    @make_android_api_method(METHOD_POST)
     def log(self, response):
         """
         @param str event
@@ -401,31 +394,3 @@ class AndroidApi(ApiInterface):
         @param int video_encode_id
         """
         pass
-
-class AjaxApi(ApiInterface):
-    """AJAX call API
-    """
-
-    METHOD_POST = 'POST'
-    METHOD_GET  = 'GET'
-
-    def __init__(self):
-        self._connector = requests.Session()
-
-    def start_session(self):
-        pass
-
-    def user_login(self):
-        pass
-
-    def videoPlayer_getStandardConfig(self):
-        pass
-
-    def videoPlayer_getChromelessConfig(self):
-        pass
-
-
-class ScraperApi(ApiInterface):
-    """HTML scraping interface
-    """
-    pass
