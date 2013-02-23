@@ -46,7 +46,7 @@ class ANDROID(API):
     class FIELD:
         # these are apparently like database fields or something that you can add
         # to the list_series, list_media, and info methods to get additional or only
-        # specific info. of particular note is the CR_FIELD_MEDIA_STREAM_DATA field
+        # specific info. of particular note is the MEDIA_STREAM_DATA field
         # to get the streams
         GENERAL_MOST_LIKELY_MEDIA   = 'most_likely_media'
         GENERAL_ORDERING            = 'ordering'
@@ -79,9 +79,12 @@ class ANDROID(API):
         IMAGE_FULL_URL              = 'image.full_url'
 
 class AJAX(API):
-    # not used yet
-    PREMIUM_TYPE_ANIME  = '2'
-    PREMIUM_TYPE_DRAMA  = '4'
+    API_DOMAIN                  = 'www.' + API.BASE_DOMAIN
+    API_URL                     = '{protocol}://' + API_DOMAIN + '/xml/'
+
+    HEADER_REFERRER     = 'http://static.ak.crunchyroll.com/flash/20130201144858.bd8118f7c58d1da788d88782497e30a4/StandardVideoPlayer.swf'
+    HEADER_ORIGIN       = 'http://static.ak.crunchyroll.com'
+    HEADER_USER_AGENT   = ANDROID.USER_AGENT
 
 class WEB(API):
     pass

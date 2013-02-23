@@ -6,7 +6,7 @@ import functools
 
 import requests
 
-from .constants import ANDROID
+from .constants import ANDROID, AJAX
 from .errors import *
 
 class ApiInterface(object):
@@ -405,7 +405,25 @@ class AndroidApi(ApiInterface):
 class AjaxApi(ApiInterface):
     """AJAX call API
     """
-    pass
+
+    METHOD_POST = 'POST'
+    METHOD_GET  = 'GET'
+
+    def __init__(self):
+        self._connector = requests.Session()
+
+    def start_session(self):
+        pass
+
+    def user_login(self):
+        pass
+
+    def videoPlayer_getStandardConfig(self):
+        pass
+
+    def videoPlayer_getChromelessConfig(self):
+        pass
+
 
 class ScraperApi(ApiInterface):
     """HTML scraping interface
