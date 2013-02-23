@@ -19,3 +19,8 @@ class ApiError(ApiException):
     """API gave us an error response (that we know how to parse)
     """
     pass
+
+class ApiLoginFailure(ApiError):
+    """Login info wasn't correct
+    """
+    pass

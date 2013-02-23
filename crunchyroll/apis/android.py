@@ -4,7 +4,7 @@ import locale
 
 import requests
 
-from ..api import ApiInterface
+from ..apis import ApiInterface
 from ..constants import ANDROID
 from .errors import *
 
@@ -154,6 +154,10 @@ class AndroidApi(ApiInterface):
         )
         return req_url
 
+    @property
+    def logged_in(self):
+        return self._state_params['auth'] is not None
+
     @make_android_api_method(METHOD_POST, False)
     def start_session(self, response):
         """
@@ -184,6 +188,8 @@ class AndroidApi(ApiInterface):
         @param int duration (optional)
         """
         self._state_params['auth'] = response['auth']
+        if not self.logged_in:
+            raise ApiLoginFailure(response)
 
     @make_android_api_method(METHOD_POST)
     def logout(self, response):
