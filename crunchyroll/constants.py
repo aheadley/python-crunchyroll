@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 class API:
     BASE_DOMAIN = 'crunchyroll.com'
