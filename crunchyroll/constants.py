@@ -45,7 +45,7 @@ class ANDROID(API):
     class FIELD:
         # these are apparently like database fields or something that you can add
         # to the list_series, list_media, and info methods to get additional or only
-        # specific info. of particular note is the CR_FIELD_MEDIA_STREAM_DATA field
+        # specific info. of particular note is the MEDIA_STREAM_DATA field
         # to get the streams
         GENERAL_MOST_LIKELY_MEDIA   = 'most_likely_media'
         GENERAL_ORDERING            = 'ordering'
