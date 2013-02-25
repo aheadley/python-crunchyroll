@@ -1,7 +1,8 @@
 python-crunchyroll
 ==================
 
-Python interface to Crunchyroll's undocumented mobile app API.
+Python interface to Crunchyroll's undocumented APIs and utilities
+for working with the returned data.
 
 ### Requirements
 

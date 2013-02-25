@@ -16,25 +16,20 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-class ApiInterface(object):
-    """This will be the basis for the shared API interfaces once the Ajax and
-    Web APIs have been implemented
+from ..apis import ApiInterface
+from .android import AndroidApi
+from .ajax import AjaxApi
+from ..constants import META, AJAX, ANDROID
+from .errors import *
+
+class MetaApi(ApiInterface):
+    """High level interface to crunchyroll
     """
+
+    def __init__(self, state=None):
+        self._ajax_api = AjaxApi()
+        self._android_api = AndroidApi()
 
     @property
     def logged_in(self):
-        """Check if a user has been logged in through the API
-        """
-        raise NotImplemented
-
-    def get_state(self):
-        """Get the internal state so that the session can be
-        resumed without logging in again between runs
-        """
-        raise NotImplemented
-
-    def set_state(self, state):
-        """Set the internal state to resume without logging in
-        again
-        """
-        raise NotImplemented
+        return self._ajax_api.logged_in and self._android_api.logged_in

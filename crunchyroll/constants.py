@@ -111,3 +111,6 @@ class AJAX(API):
 
 class WEB(API):
     pass
+
+class META(API):
+    pass
