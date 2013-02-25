@@ -6,6 +6,7 @@ Python interface to Crunchyroll's undocumented mobile app API.
 ### Requirements
 
   * requests
+  * PyCrypto
 
 ### Usage
 
@@ -45,5 +46,4 @@ Example usage:
 
 ### LICENSE
 
-This project is licensed under GPLv2+, I will get around to adding the license
-to the repo... eventually.
+This project is licensed under GPLv2+.
