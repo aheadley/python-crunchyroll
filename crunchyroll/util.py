@@ -16,35 +16,5 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from .util import xml_to_dict
-
-class DictModel(object):
-    def __init__(self, data):
-        if type(data) != dict:
-            raise TypeError('DictModel can only be initialized with a dict')
-        else:
-            self._data = data
-
-    def __getattr__(self, name):
-        try:
-            item = self._data.get(name)
-        except KeyError as err:
-            raise AttributeError(err)
-        try:
-            return DictModel(item)
-        except TypeError:
-            return item
-
-class XmlModel(object):
-    def __init__(self, data):
-        super(XmlModel, self).__init__(xml_to_dict(data))
-
-class Series(DictModel):
+def xml_to_dict():
     pass
-
-class Media(DictModel):
-    pass
-
-class MediaStream(XmlModel):
-    pass
-
