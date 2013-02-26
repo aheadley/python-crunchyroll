@@ -37,9 +37,11 @@ def require_session_started(func):
     return inner_func
 
 def require_logged_in(func):
-    """Check if APIs are logged in and login if not
+    """Check if APIs are logged in and login if not, implies
+    `require_session_started`
     """
     @functools.wraps(func)
+    @require_session_started
     def inner_func(self, *pargs, **kwargs):
         if not self.logged_in:
             if self._state['username'] is None or self._state['password'] is None:
@@ -48,6 +50,15 @@ def require_logged_in(func):
             self.login(self._state['username'], self._state['password'])
         return func(*pargs, **kwargs)
     return inner_func
+
+def return_collection(collection_type):
+    def outer_func(func):
+        @functools.wraps(func)
+        def inner_func(self, *pargs, **kwargs):
+            result = func(*pargs, **kwargs)
+            return map(collection_type, result)
+        return inner_func
+    return outer_func
 
 class MetaApi(ApiInterface):
     """High level interface to crunchyroll
@@ -106,13 +117,13 @@ class MetaApi(ApiInterface):
         self._password = password
 
     @require_session_started
+    @return_collection(Series)
     def list_anime_series(self, sort=META.SORT_ALPHA, limit=META.MAX_SERIES, offset=0):
-        result = self._android_api.list_series(
+        return self._android_api.list_series(
             media_type=ANDROID.MEDIA_TYPE_ANIME,
             filter=sort,
             limit=limit,
             offset=offset)
-        return map(Series, result)
 
     @require_session_started
     def list_drama_series(self, sort=META.SORT_ALPHA, limit=META.MAX_SERIES, offset=0):
@@ -138,6 +149,7 @@ class MetaApi(ApiInterface):
         return map(Series, result)
 
     @require_session_started
+    @return_collection(Media)
     def list_media(self, series, sort=META.SORT_ALPHA, limit=META.MAX_MEDIA, offset=0):
         params = {
             'sort': sort,
@@ -145,8 +157,7 @@ class MetaApi(ApiInterface):
             'limit': limit,
         }
         params.update(self._get_series_query_dict(series))
-        result = self._android_api.list_media(**params)
-        return map(Media, result)
+        return self._android_api.list_media(**params)
 
     @require_session_started
     def search_media(self, series, query_string):
@@ -157,7 +168,6 @@ class MetaApi(ApiInterface):
         result = self._android_api.list_media(**params)
         return map(Media, result)
 
-    @require_session_started
     @require_logged_in
     def get_media_stream(self, media_item, format=META.FORMAT_480P):
         result = self._ajax_api.VideoPlayer_GetStandardConfig(
@@ -166,18 +176,15 @@ class MetaApi(ApiInterface):
             video_quality=META.VIDEO_QUALITY)
         return MediaStream(result)
 
-    @require_session_started
     @require_logged_in
     def list_queue(self, media_types=[META.TYPE_ANIME, META.TYPE_DRAMA]):
         result = self._android_api.queue(','.join(media_types))
         return map(Series, result)
 
-    @require_session_started
     @require_logged_in
     def add_to_queue(self, series):
         return self._android_api.add_to_queue(series.series_id)
 
-    @require_session_started
     @require_logged_in
     def remove_from_queue(self, series):
         return self._android_api.remove_from_queue(series.series_id)
