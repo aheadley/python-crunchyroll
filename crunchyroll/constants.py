@@ -113,4 +113,20 @@ class WEB(API):
     pass
 
 class META(API):
-    pass
+    MAX_SERIES          = 500
+    MAX_MEDIA           = 1000
+
+    TYPE_ANIME          = ANDROID.MEDIA_TYPE_ANIME
+    TYPE_DRAMA          = ANDROID.MEDIA_TYPE_DRAMA
+
+    SORT_POPULAR        = ANDROID.FILTER_POPULAR
+    SORT_SIMULCAST      = ANDROID.FILTER_SIMULCAST
+    SORT_UPDATED        = ANDROID.FILTER_UPDATED
+    SORT_ALPHA          = ANDROID.FILTER_ALPHA
+    SORT_NEWEST         = ANDROID.FILTER_NEWEST
+
+    # TODO: fill these in
+    FORMAT_1080P        = ''
+    FORMAT_720P         = ''
+    FORMAT_480P         = ''
+    VIDEO_QUALITY       = 80

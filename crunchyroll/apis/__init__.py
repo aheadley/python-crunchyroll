@@ -22,6 +22,12 @@ class ApiInterface(object):
     """
 
     @property
+    def session_started(self):
+        """Check if the API session has started
+        """
+        raise NotImplemented
+
+    @property
     def logged_in(self):
         """Check if a user has been logged in through the API
         """

@@ -48,9 +48,11 @@ class AjaxApi(ApiInterface):
     METHOD_POST = 'POST'
     METHOD_GET  = 'GET'
 
-    def __init__(self):
+    def __init__(self, state=None):
         self._connector = requests.Session()
         self._last_response = None
+        if state is not None:
+            self.set_state(state)
 
     def _build_request_url(self, secure):
         proto = AJAX.PROTOCOL_SECURE if secure else AJAX.PROTOCOL_INSECURE
@@ -70,8 +72,21 @@ class AjaxApi(ApiInterface):
         return req_func
 
     @property
+    def session_started(self):
+        return True
+
+    @property
     def logged_in(self):
         return AJAX.COOKIE_USERID in self._connector.cookies
+
+    def get_state(self):
+        # TODO: this almost certainly doesn't work
+        return json.dumps(self._connector.cookies)
+
+    def set_state(self, state):
+        # TODO: this almost certainly doesn't work
+        cookie_jar = json.loads(state)
+        self._connector.cookies.update(cookie_jar)
 
     @make_ajax_api_method(METHOD_POST, True)
     def User_Login(self, req_func):

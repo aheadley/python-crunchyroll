@@ -16,20 +16,177 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import functools
+import json
+
 from ..apis import ApiInterface
 from .android import AndroidApi
 from .ajax import AjaxApi
 from ..constants import META, AJAX, ANDROID
 from .errors import *
+from ..models import *
+
+def require_session_started(func):
+    """Check if API sessions are started and start them if not
+    """
+    @functools.wraps(func)
+    def inner_func(self, *pargs, **kwargs):
+        if not self.session_started:
+            self.start_session()
+        return func(*pargs, **kwargs)
+    return inner_func
+
+def require_logged_in(func):
+    """Check if APIs are logged in and login if not
+    """
+    @functools.wraps(func)
+    def inner_func(self, *pargs, **kwargs):
+        if not self.logged_in:
+            if self._state['username'] is None or self._state['password'] is None:
+                raise ApiLoginFailure(
+                    'Login is required but no credentials were provided')
+            self.login(self._state['username'], self._state['password'])
+        return func(*pargs, **kwargs)
+    return inner_func
 
 class MetaApi(ApiInterface):
     """High level interface to crunchyroll
     """
 
-    def __init__(self, state=None):
+    def __init__(self, username=None, password=None, state=None):
+        self._state = {
+            'username': username,
+            'password': password,
+        }
         self._ajax_api = AjaxApi()
         self._android_api = AndroidApi()
+        if state is not None:
+            self.set_state(state)
+
+    @property
+    def session_started(self):
+        return self._ajax_api.session_started and \
+            self._android_api.session_started
 
     @property
     def logged_in(self):
         return self._ajax_api.logged_in and self._android_api.logged_in
+
+    def get_state(self):
+        return json.dumps({
+            'meta':     self._state,
+            'ajax':     self._ajax_api.get_state(),
+            'android':  self._android_api.get_state(),
+        })
+
+    def set_state(self, state):
+        # TODO: error handling here
+        decoded_state = json.loads(state)
+        self._ajax_api.set_state(decoded_state['ajax'])
+        self._android_api.set_state(decoded_state['android'])
+
+    def start_session(self):
+        """Start the underlying APIs sessions
+
+        Calling this is not required, it will be called automatically if
+        a method that needs a session is called
+        """
+        self._android_api.start_session()
+
+    @require_session_started
+    def login(self, username, password):
+        """Login with the given username/email and password
+
+        Calling this method is not required if credentials were provided in
+        the constructor, but it could be used to switch users or something
+        """
+        self._ajax_api.User_Login(name=username, password=password)
+        self._android_api.login(account=username, password=password)
+        self._username = username
+        self._password = password
+
+    @require_session_started
+    def list_anime_series(self, sort=META.SORT_ALPHA, limit=META.MAX_SERIES, offset=0):
+        result = self._android_api.list_series(
+            media_type=ANDROID.MEDIA_TYPE_ANIME,
+            filter=sort,
+            limit=limit,
+            offset=offset)
+        return map(Series, result)
+
+    @require_session_started
+    def list_drama_series(self, sort=META.SORT_ALPHA, limit=META.MAX_SERIES, offset=0):
+        result = self._android_api.list_series(
+            media_type=ANDROID.MEDIA_TYPE_DRAMA,
+            filter=sort,
+            limit=limit,
+            offset=offset)
+        return map(Series, result)
+
+    @require_session_started
+    def search_anime_series(self, query_string):
+        result = self._android_api.list_series(
+            media_type=ANDROID.MEDIA_TYPE_ANIME,
+            filter=ANDROID.FILTER_PREFIX + query_string)
+        return map(Series, result)
+
+    @require_session_started
+    def search_drama_series(self, query_string):
+        result = self._android_api.list_series(
+            media_type=ANDROID.MEDIA_TYPE_DRAMA,
+            filter=ANDROID.FILTER_PREFIX + query_string)
+        return map(Series, result)
+
+    @require_session_started
+    def list_media(self, series, sort=META.SORT_ALPHA, limit=META.MAX_MEDIA, offset=0):
+        params = {
+            'sort': sort,
+            'offset': offset,
+            'limit': limit,
+        }
+        params.update(self._get_series_query_dict(series))
+        result = self._android_api.list_media(**params)
+        return map(Media, result)
+
+    @require_session_started
+    def search_media(self, series, query_string):
+        params = {
+            'sort': ANDROID.FILTER_PREFIX + query_string,
+        }
+        params.update(self._get_series_query_dict(series))
+        result = self._android_api.list_media(**params)
+        return map(Media, result)
+
+    @require_session_started
+    @require_logged_in
+    def get_media_stream(self, media_item, format=META.FORMAT_480P):
+        result = self._ajax_api.VideoPlayer_GetStandardConfig(
+            media_id=media_item.media_id,
+            video_format=format,
+            video_quality=META.VIDEO_QUALITY)
+        return MediaStream(result)
+
+    @require_session_started
+    @require_logged_in
+    def list_queue(self, media_types=[META.TYPE_ANIME, META.TYPE_DRAMA]):
+        result = self._android_api.queue(','.join(media_types))
+        return map(Series, result)
+
+    @require_session_started
+    @require_logged_in
+    def add_to_queue(self, series):
+        return self._android_api.add_to_queue(series.series_id)
+
+    @require_session_started
+    @require_logged_in
+    def remove_from_queue(self, series):
+        return self._android_api.remove_from_queue(series.series_id)
+
+    def _get_series_query_dict(self, series):
+        """Pick between collection_id and series_id params in series models for the
+        Android API
+        """
+        if hasattr(series, 'series_id'):
+            return {'series_id': series.series_id}
+        else:
+            return {'collection_id': series.collection_id}

@@ -16,34 +16,32 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-class ApiException(Exception):
-    """Base class for exceptions thrown by the API classes
-    """
+class DictModel(object):
+    def __init__(self, data):
+        if type(data) != dict:
+            raise TypeError('DictModel can only be initialized with a dict')
+        else:
+            self._data = data
+
+    def __getattr__(self, name):
+        try:
+            item = self._data.get(name)
+        except KeyError as err:
+            raise AttributeError(err)
+        try:
+            return DictModel(item)
+        except TypeError:
+            return item
+
+class XmlModel(object):
     pass
 
-class ApiNetworkException(ApiException):
-    """We couldn't talk to the API because the internet tubes are clogged or
-    something
-    """
+class Series(DictModel):
     pass
 
-class ApiBadResponseException(ApiException):
-    """We got a response from the API but it didn't make any sense or we don't
-    know how to handle it
-    """
+class Media(DictModel):
     pass
 
-class ApiError(ApiException):
-    """API gave us an error response (that we know how to parse)
-    """
+class MediaStream(XmlModel):
     pass
 
-class ApiLoginFailure(ApiError):
-    """Login info wasn't correct
-    """
-    pass
-
-class ExpiredState(ApiException):
-    """API state we tried to use is too old to be resumed from
-    """
-    pass

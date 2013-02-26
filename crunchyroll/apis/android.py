@@ -17,6 +17,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import locale
+import json
 
 import requests
 
@@ -55,7 +56,7 @@ class AndroidApi(ApiInterface):
     METHOD_GET      = 'GET'
     METHOD_POST     = 'POST'
 
-    def __init__(self, session_id=None, auth=None):
+    def __init__(self, state=None):
         """Init object, optionally with previously stored session and/or auth
         tokens
         """
@@ -76,8 +77,8 @@ class AndroidApi(ApiInterface):
             'User-Agent': ANDROID.USER_AGENT,
         }
         self._state_params = {
-            'session_id': session_id,
-            'auth': auth,
+            'session_id': None,
+            'auth': None,
             'user': None,
         }
         # for debugging
@@ -85,6 +86,8 @@ class AndroidApi(ApiInterface):
         # dunno what these are for yet, seems to be a way to tell the client
         # to do something
         self._session_ops = []
+        if state is not None:
+            self.set_state(state)
 
     def _get_locale(self):
         """Get the current locale with dashes (-) and underscores (_) removed
@@ -171,8 +174,18 @@ class AndroidApi(ApiInterface):
         return req_url
 
     @property
+    def session_started(self):
+        return self._state_params.get('session_id', None) is not None
+
+    @property
     def logged_in(self):
         return self._state_params['auth'] is not None
+
+    def get_state(self):
+        return json.dumps(self._state_params)
+
+    def set_state(self, state):
+        self._state_params.update(json.loads(state))
 
     @make_android_api_method(METHOD_POST, False)
     def start_session(self, response):
