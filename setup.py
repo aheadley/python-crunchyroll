@@ -29,6 +29,26 @@ packages = [
     'crunchyroll.apis',
 ]
 
+classifiers = (
+    'Intended Audience :: Developers',
+    'Natural Language :: English',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 2.6',
+    'Programming Language :: Python :: 2.7',
+)
+
+def format_requirement(req):
+    COMP_CHARS = '<>!='
+    try:
+        idx = min(req.find(c) for c in COMP_CHARS if req.find(c) > 0)
+    except ValueError:
+        return req
+    else:
+        return '%s (%s)' % (req[:idx], req[idx:])
+
+raw_requirements = open('requirements.txt').read().strip()
+requirements = [format_requirement(req) for req in raw_requirements.split('\n')]
+
 setup(
     name='crunchyroll',
     version=crunchyroll.__version__,
@@ -39,5 +59,8 @@ setup(
     url=crunchyroll.__url__,
     packages=packages,
     package_data={'': ['LICENSE']},
-    license=open('LICENSE').read()
+    license=open('LICENSE').read(),
+    classifiers=classifiers,
+    provides=['crunchyroll'],
+    requires=requirements
 )
