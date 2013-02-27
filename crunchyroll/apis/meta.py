@@ -294,10 +294,9 @@ class MetaApi(ApiInterface):
         """Add a series to the queue
 
         @param crunchyroll.models.Series series
-        @return None
+        @return bool
         """
         result = self._android_api.add_to_queue(series_id=series.series_id)
-        # TODO: make this return if the add was successful or not
         return result
 
     @require_android_logged_in
@@ -305,10 +304,9 @@ class MetaApi(ApiInterface):
         """Remove a series from the queue
 
         @param crunchyroll.models.Series series
-        @return None
+        @return bool
         """
         result = self._android_api.remove_from_queue(series_id=series.series_id)
-        # TODO: make this return if the removal was successful or not
         return result
 
     def _get_series_query_dict(self, series):

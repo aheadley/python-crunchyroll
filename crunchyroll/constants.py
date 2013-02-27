@@ -144,3 +144,4 @@ class META(API):
     SORT_DESC           = 'desc'
     SORT_ASC            = 'asc'
 
+    VIDEO = AJAX.VIDEO

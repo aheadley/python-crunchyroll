@@ -117,12 +117,12 @@ class AndroidApi(ApiInterface):
         I'm not sure what these session_ops are actually used for yet, seems to
         be a way to tell the client to do *something* if needed.
         """
-        if 'ops' in response_data:
-            try:
-                self._session_ops.extend(response_data.get('ops', []))
-            except AttributeError:
-                # oops, wasn't a dict
-                pass
+        try:
+            sess_ops = response_data.get('ops', [])
+        except AttributeError:
+            pass
+        else:
+            self._session_ops.extend(sess_ops)
 
     def _build_request(self, method, url, params=None):
         """Build a function to do an API request
