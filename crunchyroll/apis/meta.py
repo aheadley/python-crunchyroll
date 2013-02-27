@@ -25,6 +25,7 @@ from .ajax import AjaxApi
 from ..constants import META, AJAX, ANDROID
 from .errors import *
 from ..models import *
+from ..util import return_collection
 
 def require_session_started(func):
     """Check if API sessions are started and start them if not
@@ -65,17 +66,6 @@ def require_ajax_logged_in(func):
                 password=self._state['password'])
         return func(self, *pargs, **kwargs)
     return inner_func
-
-def return_collection(collection_type):
-    """Change method return value from raw API output to collection of models
-    """
-    def outer_func(func):
-        @functools.wraps(func)
-        def inner_func(self, *pargs, **kwargs):
-            result = func(self, *pargs, **kwargs)
-            return map(collection_type, result)
-        return inner_func
-    return outer_func
 
 class MetaApi(ApiInterface):
     """High level interface to crunchyroll
@@ -276,6 +266,16 @@ class MetaApi(ApiInterface):
             video_format=format,
             video_quality=quality)
         return MediaStream(result)
+
+    @require_ajax_logged_in
+    def unfold_subtitle_stub(self, subtitle_stub):
+        """Turn a SubtitleStub into a full Subtitle object
+
+        @param crunchyroll.models.SubtitleStub subtitle_stub
+        @return crunchyroll.models.Subtitle
+        """
+        return Subtitle(self._ajax_api.Subtitle_GetXml(
+            subtitle_script_id=int(subtitle_stub.id)))
 
     @require_android_logged_in
     @return_collection(Series)

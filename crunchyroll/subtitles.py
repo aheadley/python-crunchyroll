@@ -19,7 +19,6 @@
 import math
 import hashlib
 import zlib
-from xml.dom.minidom import parseString as minidom_parseString
 
 try:
     from crypto.cipher.aes_cbc import AES_CBC
@@ -46,6 +45,14 @@ class SubtitleDecrypter(object):
     HASH_SECRET_MOD_CONST   = 97
     HASH_SECRET_CHAR_OFFSET = 33
     HASH_SECRET_LENGTH      = 20
+
+    def decrypt_subtitle(self, subtitle):
+        """Decrypt encrypted subtitle data in high level model object
+
+        @param crunchyroll.models.Subtitle subtitle
+        @return str
+        """
+        return self.decrypt(subtitle.id, subtitle['iv'][0].text, subtitle['data'][0].text)
 
     def decrypt(self, subtitle_id, iv, encrypted_data):
         """Decrypt encrypted subtitle data

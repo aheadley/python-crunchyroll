@@ -16,5 +16,29 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-def xml_to_dict():
-    pass
+import functools
+import xml.etree.ElementTree as ET
+try:
+    from HTMLParser import HTMLParser
+except ImportError:
+    from html.parser import HTMLParser
+
+# use a singleton parser
+_html_parser = HTMLParser()
+
+def html_unescape(html_string):
+    return _html_parser.unescape(html_string)
+
+def return_collection(collection_type):
+    """Change method return value from raw API output to collection of models
+    """
+    def outer_func(func):
+        @functools.wraps(func)
+        def inner_func(self, *pargs, **kwargs):
+            result = func(self, *pargs, **kwargs)
+            return map(collection_type, result)
+        return inner_func
+    return outer_func
+
+def parse_xml_string(xml_string):
+    return ET.fromstring(xml_string)

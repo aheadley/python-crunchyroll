@@ -16,11 +16,14 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from .util import xml_to_dict
+import re
+
+from .util import parse_xml_string, return_collection
+from .subtitles import SubtitleDecrypter
 
 class DictModel(object):
     def __init__(self, data):
-        if type(data) != dict:
+        if not isinstance(data, dict):
             raise TypeError('DictModel can only be initialized with a dict')
         else:
             self._data = data
@@ -35,9 +38,59 @@ class DictModel(object):
         except TypeError:
             return item
 
+    def __repr__(self):
+        return '<%s(%s)>' % (self.__class__.__name__, repr(self._data))
+
 class XmlModel(object):
-    def __init__(self, data):
-        super(XmlModel, self).__init__(xml_to_dict(data))
+    def __init__(self, node):
+        if isinstance(node, basestring):
+            try:
+                node = parse_xml_string(node)
+            except Exception as err:
+                raise ValueError(err)
+        elif isinstance(node, XmlModel):
+            node = node._data
+        elif node is None:
+            raise ValueError('XmlModel node cannot be NoneType')
+        self._data = node
+
+    def __getattr__(self, name):
+        try:
+            return self._data.attrib.get(name)
+        except KeyError as err:
+            raise AttributeError(err)
+
+    def __repr__(self):
+        name = self.__class__.__name__
+        try:
+            return '<%s(id=%s)>' % (name, self.id)
+        except (AttributeError, TypeError):
+            return '<%s(%s)>' % (name, self.tag_name)
+
+    def __str__(self):
+        return self.text
+
+    __unicode__ = __str__
+
+    def __getitem__(self, name):
+        return map(XmlModel, self.findall('./' + name))
+
+    @property
+    def text(self):
+        return self._data.text
+
+    @property
+    def tag_name(self):
+        return self._data.tag
+
+    def findall(self, query):
+        return map(XmlModel, self._data.findall(query))
+
+    def findfirst(self, query):
+        try:
+            return self.findall(query)[0]
+        except IndexError:
+            return None
 
 class Series(DictModel):
     pass
@@ -45,6 +98,53 @@ class Series(DictModel):
 class Media(DictModel):
     pass
 
-class MediaStream(XmlModel):
+class SubtitleStub(XmlModel):
+    LANG_UNKNOWN    = 'UNKNOWN'
+
+    @property
+    def language(self):
+        lang = re.search(r'^\[.*\]\s*(.*)', self.title)
+        if lang:
+            return lang.group(1)
+        else:
+            return self.LANG_UNKNOWN
+
+    @property
+    def is_default(self):
+        return self.default == '1'
+
+class Subtitle(XmlModel):
+    def __init__(self, node):
+        super(Subtitle, self).__init__(node)
+        self._decrypter = SubtitleDecrypter()
+
+    def decrypt(self):
+        return StyledSubtitle(self._decrypter.decrypt(self.id,
+            self['iv'][0].text, self['data'][0].text))
+
+class StyledSubtitle(XmlModel):
     pass
 
+class MediaStream(XmlModel):
+    @property
+    def rtmp_data(self):
+        data = {
+            'host':         self.findfirst(
+                './/{default}preload/stream_info/host').text,
+            'file':         self.findfirst(
+                './/{default}preload/stream_info/file').text,
+            'token':        self.findfirst(
+                './/{default}preload/stream_info/token').text,
+            'duration':     self.findfirst(
+                './/{default}preload/stream_info/metadata/duration').text,
+        }
+        return data
+
+    @property
+    def default_subtitles(self):
+        return Subtitle(self.findfirst('.//{default}preload/subtitle'))
+
+    @property
+    @return_collection(SubtitleStub)
+    def subtitle_stubs(self):
+        return self.findall('.//{default}preload/subtitles/subtitle')
