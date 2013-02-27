@@ -37,7 +37,7 @@ def require_session_started(func):
     return inner_func
 
 def require_android_logged_in(func):
-    """Check if APIs are logged in and login if not, implies
+    """Check if andoid API is logged in and login if not, implies
     `require_session_started`
     """
     @functools.wraps(func)
@@ -53,8 +53,7 @@ def require_android_logged_in(func):
     return inner_func
 
 def require_ajax_logged_in(func):
-    """Check if APIs are logged in and login if not, implies
-    `require_session_started`
+    """Check if ajax API is logged in and login if not
     """
     @functools.wraps(func)
     def inner_func(self, *pargs, **kwargs):
@@ -68,6 +67,8 @@ def require_ajax_logged_in(func):
     return inner_func
 
 def return_collection(collection_type):
+    """Change method return value from raw API output to collection of models
+    """
     def outer_func(func):
         @functools.wraps(func)
         def inner_func(self, *pargs, **kwargs):
@@ -109,6 +110,7 @@ class MetaApi(ApiInterface):
     def set_state(self, state):
         # TODO: error handling here
         decoded_state = json.loads(state)
+        self._state = decoded_state['meta']
         self._ajax_api.set_state(decoded_state['ajax'])
         self._android_api.set_state(decoded_state['android'])
 
@@ -132,7 +134,7 @@ class MetaApi(ApiInterface):
 
         @return bool
         """
-        # this could get stuck in an inconsist state if got an exception while
+        # we could get stuck in an inconsistent state if got an exception while
         # trying to login with different credentials than what is stored so
         # we rollback the state to prevent that
         state_snapshot = self._state.copy()

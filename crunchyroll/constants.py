@@ -130,8 +130,8 @@ class WEB(API):
     pass
 
 class META(API):
-    MAX_SERIES          = 20
-    MAX_MEDIA           = 100
+    MAX_SERIES          = 500
+    MAX_MEDIA           = 1000
 
     TYPE_ANIME          = ANDROID.MEDIA_TYPE_ANIME
     TYPE_DRAMA          = ANDROID.MEDIA_TYPE_DRAMA
