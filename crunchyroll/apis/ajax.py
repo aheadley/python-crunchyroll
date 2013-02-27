@@ -16,6 +16,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import json
+
 import requests
 
 from ..apis import ApiInterface
@@ -64,11 +66,14 @@ class AjaxApi(ApiInterface):
                 func = getattr(self._connector, req_method.lower())
             except AttributeError:
                 raise ApiException('Invalid request method')
-            if secure and req_method == self.METHOD_POST:
-                # wouldn't make sense to send data on a GET request
-                return func(req_url, data=params)
-            else:
-                return func(req_url, params=params)
+            try:
+                if secure and req_method == self.METHOD_POST:
+                    # wouldn't make sense to send data on a GET request
+                    return func(req_url, data=params)
+                else:
+                    return func(req_url, params=params)
+            except requests.RequestException as err:
+                raise ApiNetworkException(err)
         return req_func
 
     @property

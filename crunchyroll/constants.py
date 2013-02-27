@@ -109,12 +109,29 @@ class AJAX(API):
     COOKIE_VISITOR      = 'c_visitor'
     COOKIE_SESSID       = 'sess_id'
 
+    class VIDEO:
+        FORMAT_1080P        = 108
+        FORMAT_720P         = 106
+        FORMAT_480P         = 102
+
+        FORMATS             = {
+            '1080p':    FORMAT_1080P,
+            '720p':     FORMAT_720P,
+            '480p':     FORMAT_480P,
+        }
+
+        QUALITY_MAX         = 100
+        QUALITY_HIGH        = 80
+        QUALITY_MID         = 60
+        QUALITY_LOW         = 20
+        QUALITY_MIN         = 10
+
 class WEB(API):
     pass
 
 class META(API):
-    MAX_SERIES          = 500
-    MAX_MEDIA           = 1000
+    MAX_SERIES          = 20
+    MAX_MEDIA           = 100
 
     TYPE_ANIME          = ANDROID.MEDIA_TYPE_ANIME
     TYPE_DRAMA          = ANDROID.MEDIA_TYPE_DRAMA
@@ -124,9 +141,6 @@ class META(API):
     SORT_UPDATED        = ANDROID.FILTER_UPDATED
     SORT_ALPHA          = ANDROID.FILTER_ALPHA
     SORT_NEWEST         = ANDROID.FILTER_NEWEST
+    SORT_DESC           = 'desc'
+    SORT_ASC            = 'asc'
 
-    # TODO: fill these in
-    FORMAT_1080P        = ''
-    FORMAT_720P         = ''
-    FORMAT_480P         = ''
-    VIDEO_QUALITY       = 80

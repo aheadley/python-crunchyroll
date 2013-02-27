@@ -141,7 +141,10 @@ class AndroidApi(ApiInterface):
         # TODO: need to catch a network here and raise as ApiNetworkException
 
         def do_request():
-            resp = request_func(url, full_params)
+            try:
+                resp = request_func(url, full_params)
+            except requests.RequestException as err:
+                raise ApiNetworkException(err)
             try:
                 resp_json = resp.json()
             except TypeError:
@@ -312,7 +315,7 @@ class AndroidApi(ApiInterface):
     @make_android_api_method(METHOD_GET)
     def queue(self, response):
         """
-        @param str media_types
+        @param str media_types  | (pipe) separated list of ANDROID.MEDIA_TYPE_*
         """
         pass
 
