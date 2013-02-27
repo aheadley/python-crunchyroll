@@ -185,10 +185,16 @@ class AndroidApi(ApiInterface):
         return self._state_params['auth'] is not None
 
     def get_state(self):
-        return json.dumps(self._state_params)
+        state = {
+            'state_params': self._state_params,
+            'cookies': dict(self._connector.cookies),
+        }
+        return json.dumps(state)
 
     def set_state(self, state):
-        self._state_params.update(json.loads(state))
+        loaded_state = json.loads(state)
+        self._state_params.update(loaded_state['state_params'])
+        self._connector.cookies.update(loaded_state['cookies'])
 
     @make_android_api_method(METHOD_POST, False)
     def start_session(self, response):

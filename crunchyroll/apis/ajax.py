@@ -85,11 +85,9 @@ class AjaxApi(ApiInterface):
         return AJAX.COOKIE_USERID in self._connector.cookies
 
     def get_state(self):
-        # TODO: this almost certainly doesn't work
-        return json.dumps(self._connector.cookies)
+        return json.dumps(dict(self._connector.cookies))
 
     def set_state(self, state):
-        # TODO: this almost certainly doesn't work
         cookie_jar = json.loads(state)
         self._connector.cookies.update(cookie_jar)
 
