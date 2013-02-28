@@ -17,12 +17,15 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import json
+import logging
 
 import requests
 
 from ..apis import ApiInterface
 from ..constants import AJAX
 from .errors import *
+
+logger = logging.getLogger('crunchyroll.apis.ajax')
 
 def make_ajax_api_method(req_method, secure=False):
     def outer_func(func):
@@ -62,6 +65,8 @@ class AjaxApi(ApiInterface):
 
     def _build_request(self, req_method, req_url, secure, params):
         def req_func():
+            logger.debug('Sending %s request to "%s" with params: %r',
+                req_method, req_url, params)
             try:
                 func = getattr(self._connector, req_method.lower())
             except AttributeError:
@@ -69,11 +74,13 @@ class AjaxApi(ApiInterface):
             try:
                 if secure and req_method == self.METHOD_POST:
                     # wouldn't make sense to send data on a GET request
-                    return func(req_url, data=params)
+                    resp = func(req_url, data=params)
                 else:
-                    return func(req_url, params=params)
+                    resp = func(req_url, params=params)
             except requests.RequestException as err:
                 raise ApiNetworkException(err)
+            logger.debug('Received response code: %d', resp.status_code)
+            return resp
         return req_func
 
     @property
@@ -85,9 +92,12 @@ class AjaxApi(ApiInterface):
         return AJAX.COOKIE_USERID in self._connector.cookies
 
     def get_state(self):
-        return json.dumps(dict(self._connector.cookies))
+        state_string = json.dumps(dict(self._connector.cookies))
+        logger.debug('Generated state: %s', state_string)
+        return state_string
 
     def set_state(self, state):
+        logger.debug('Loading state: %s', state)
         cookie_jar = json.loads(state)
         self._connector.cookies.update(cookie_jar)
 

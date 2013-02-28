@@ -20,6 +20,7 @@ import math
 import hashlib
 import zlib
 import re
+import logging
 
 try:
     from crypto.cipher.aes_cbc import AES_CBC
@@ -28,6 +29,8 @@ try:
 except ImportError:
     from Crypto.Cipher.AES import MODE_CBC, AESCipher
     _LEGACY_CRYPTO = False
+
+logger = logging.getLogger('crunchyroll.subtitles')
 
 class SubtitleDecrypter(object):
     """Decrypt Crunchyroll's encrypted subtitle data
@@ -65,6 +68,8 @@ class SubtitleDecrypter(object):
         """
 
         encryption_key = self._build_encryption_key(int(subtitle_id))
+        logger.info('Decrypting subtitles with length (%d bytes), ID=%s and key=%r',
+            len(encrypted_data), subtitle_id, encryption_key)
         decryption_func = self._get_decryption_func(encryption_key, iv.decode('base64'))
         return zlib.decompress(decryption_func(encrypted_data.decode('base64')))
 
@@ -72,6 +77,7 @@ class SubtitleDecrypter(object):
         """Get a function to do encryption based on the version of the pycrypto
         module being used
         """
+        logger.debug('Using legacy crypto: %r', _LEGACY_CRYPTO)
         if _LEGACY_CRYPTO:
             def decrypt_func(data):
                 cipher = AES_CBC(encryption_key, padding=noPadding(),
@@ -150,7 +156,8 @@ class SubtitleFormatter(object):
         @param str|crunchyroll.models.StyledSubtitle sub_xml_text
         @return str
         """
-
+        logger.debug('Formatting subtitles (id=%s) with %s',
+            subtitles.id, self.__class__.__name__)
         return self._format(subtitles).encode('utf-8')
 
     def _format(self, styled_subtitle):
@@ -204,6 +211,7 @@ Created: {created}
         return header.format(**subtitle_element._data.attrib)
 
     def _format_styles(self, style_elements):
+        logger.debug('Formatting %d ASS style elements', len(style_elements))
         style = '\n'.join([
             self.STYLE_HEADER,
             self.STYLE_KEYS,
@@ -221,6 +229,7 @@ Created: {created}
         return self.STYLE_FORMAT.format(**attrs)
 
     def _format_events(self, event_elements):
+        logger.debug('Formatting %d ASS event elements', len(event_elements))
         event_elements.sort(key=lambda e: int(e.id))
         events = '\n'.join([
             self.EVENT_HEADER,
@@ -264,6 +273,7 @@ class SRTFormatter(SubtitleFormatter):
 
     def _format(self, styled_subtitle):
         events = styled_subtitle.findall('.//events/event')
+        logger.debug('Formatting %d SRT events', len(events))
         events.sort(key=lambda e: e.id)
         return '\n\n'.join(self._format_event(idx, event) \
             for idx, event in enumerate(events, 1)) + '\n'

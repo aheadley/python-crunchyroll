@@ -22,6 +22,8 @@ class API:
     PROTOCOL_INSECURE   = 'http'
     PROTOCOL_SECURE     = 'https'
 
+    LOG_FORMAT          = '%(asctime)s %(name)s[%(levelname)s]: %(message)s'
+
 class ANDROID(API):
     ACCESS_TOKEN                = '1M8BbXptBS4VhMP'
     API_DOMAIN                  = 'api.' + API.BASE_DOMAIN
@@ -156,4 +158,4 @@ class META(API):
     # fortunately CR provides us with the latest version to the CPA.swf without
     # the revision in the path
     SWF_URL             = 'http://static.ak.crunchyroll.com/swf/ChromelessPlayerApp.swf'
-    PAGE_URL            = 'http://www.crunchyroll.com/'
+    PAGE_URL            = AJAX.API_CURRENT_PAGE

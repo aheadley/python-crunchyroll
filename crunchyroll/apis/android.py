@@ -18,12 +18,15 @@
 
 import locale
 import json
+import logging
 
 import requests
 
 from ..apis import ApiInterface
 from ..constants import ANDROID
 from .errors import *
+
+logger = logging.getLogger('crunchyroll.apis.android')
 
 def make_android_api_method(req_method, secure=True, version=0):
     """Turn an AndroidApi's method into a function that builds the request,
@@ -88,6 +91,7 @@ class AndroidApi(ApiInterface):
         self._session_ops = []
         if state is not None:
             self.set_state(state)
+        logger.info('Initialized state: %r', self._state_params)
 
     def _get_locale(self):
         """Get the current locale with dashes (-) and underscores (_) removed
@@ -141,8 +145,11 @@ class AndroidApi(ApiInterface):
         # TODO: need to catch a network here and raise as ApiNetworkException
 
         def do_request():
+            logger.debug('Sending %s request "%s" with params: %r',
+                method, url, full_params)
             try:
                 resp = request_func(url, full_params)
+                logger.debug('Received response code: %d', resp.status_code)
             except requests.RequestException as err:
                 raise ApiNetworkException(err)
             try:

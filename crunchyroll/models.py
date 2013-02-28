@@ -17,10 +17,13 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import re
+import logging
 
 from .util import parse_xml_string, return_collection
 from .subtitles import SubtitleDecrypter, SRTFormatter, ASS4plusFormatter
 from .constants import META
+
+logger = logging.getLogger('crunchyroll.models')
 
 class DictModel(object):
     def __init__(self, data):
@@ -50,6 +53,8 @@ class XmlModel(object):
             except Exception as err:
                 raise ValueError(err)
         elif isinstance(node, XmlModel):
+            logger.debug('Creating new %s with node=%r', self.__class__.__name__,
+                node)
             node = node._data
         elif node is None:
             raise ValueError('XmlModel node cannot be NoneType')
@@ -106,9 +111,11 @@ class SubtitleStub(XmlModel):
     def language(self):
         lang = re.search(r'^\[.*\]\s*(.*)', self.title)
         if lang:
-            return lang.group(1)
+            lang_string = lang.group(1)
         else:
-            return self.LANG_UNKNOWN
+            lang_string = self.LANG_UNKNOWN
+        logger.debug('%r language: %r -> %r', self, self.title, lang_string)
+        return lang_string
 
     @property
     def is_default(self):

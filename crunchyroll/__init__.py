@@ -37,12 +37,25 @@ __copyright__       = 'Copyright 2013 Alex Headley'
 __url__             = 'https://github.com/aheadley/python-crunchyroll'
 
 # set default logging handler
+import os
 import logging
+
+logger = logging.getLogger(__title__)
+logger.setLevel(logging.INFO)
 try:
-    from logging import NullHandler
-except ImportError:
+    logger.addHandler(logging.NullHandler())
+except AttributeError:
     class NullHandler(logging.Handler):
         def emit(self, record):
             pass
+    logger.addHandler(NullHandler())
 
-logging.getLogger(__name__).addHandler(NullHandler())
+if os.environ.get('CRUNCHYROLL_DEBUG', False):
+    from .constants import API
+
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter(API.LOG_FORMAT))
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+
+logger.debug('%s module init', __title__)
