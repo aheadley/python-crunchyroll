@@ -45,5 +45,5 @@ def parse_xml_string(xml_string):
 
 def format_rtmpdump_args(rmtp_data):
     arg_string = '-r {url} -W {swf_url} -T {token} -y {file} ' \
-    '-p {page_url} -t {url}'
+        '-p {page_url} -t {url}'
     return arg_string.format(**rtmp_data)
