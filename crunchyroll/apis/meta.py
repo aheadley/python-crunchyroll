@@ -267,7 +267,6 @@ class MetaApi(ApiInterface):
             video_quality=quality)
         return MediaStream(result)
 
-    @require_ajax_logged_in
     def unfold_subtitle_stub(self, subtitle_stub):
         """Turn a SubtitleStub into a full Subtitle object
 
