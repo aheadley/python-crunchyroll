@@ -20,6 +20,7 @@ import re
 
 from .util import parse_xml_string, return_collection
 from .subtitles import SubtitleDecrypter, SRTFormatter, ASS4plusFormatter
+from .constants import META
 
 class DictModel(object):
     def __init__(self, data):
@@ -135,14 +136,14 @@ class MediaStream(XmlModel):
     @property
     def rtmp_data(self):
         data = {
-            'host':         self.findfirst(
+            'url':         self.findfirst(
                 './/{default}preload/stream_info/host').text,
             'file':         self.findfirst(
                 './/{default}preload/stream_info/file').text,
             'token':        self.findfirst(
                 './/{default}preload/stream_info/token').text,
-            'duration':     self.findfirst(
-                './/{default}preload/stream_info/metadata/duration').text,
+            'swf_url':      META.SWF_URL,
+            'page_url':     META.PAGE_URL,
         }
         return data
 

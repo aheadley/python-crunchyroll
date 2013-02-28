@@ -151,3 +151,9 @@ class META(API):
     SORT_DESC           = ANDROID.FILTER_DESC
 
     VIDEO = AJAX.VIDEO
+
+    # normally you would need the player revision to generate this URL, but
+    # fortunately CR provides us with the latest version to the CPA.swf without
+    # the revision in the path
+    SWF_URL             = 'http://static.ak.crunchyroll.com/swf/ChromelessPlayerApp.swf'
+    PAGE_URL            = 'http://www.crunchyroll.com/'
