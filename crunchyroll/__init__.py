@@ -24,6 +24,9 @@ Crunchyroll Library
 A library to interface with Crunchyroll's various APIs and utilites to work
 with the returned data
 
+Set environment var CRUNCHYROLL_DEBUG to '1' to enable debug logging to
+stderr
+
 :copyright: (c) 2013 by Alex Headley
 :license: GNU General Public License v2+, see LICENCE for more details
 """
