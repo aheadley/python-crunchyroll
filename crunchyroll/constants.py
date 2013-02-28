@@ -132,9 +132,6 @@ class AJAX(API):
         QUALITY_LOW         = 20
         QUALITY_MIN         = 10
 
-class WEB(API):
-    pass
-
 class META(API):
     MAX_SERIES          = 500
     MAX_MEDIA           = 1000
