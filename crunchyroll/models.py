@@ -19,7 +19,7 @@
 import re
 
 from .util import parse_xml_string, return_collection
-from .subtitles import SubtitleDecrypter
+from .subtitles import SubtitleDecrypter, SRTFormatter, ASS4plusFormatter
 
 class DictModel(object):
     def __init__(self, data):
@@ -123,7 +123,13 @@ class Subtitle(XmlModel):
             self['iv'][0].text, self['data'][0].text))
 
 class StyledSubtitle(XmlModel):
-    pass
+    def get_ass_formatted(self):
+        formatter = ASS4plusFormatter()
+        return formatter.format(self)
+
+    def get_srt_formatted(self):
+        formatter = SRTFormatter()
+        return formatter.format(self)
 
 class MediaStream(XmlModel):
     @property
