@@ -100,7 +100,8 @@ class AJAX(API):
     API_URL                     = '{protocol}://' + API_DOMAIN + '/xml/'
     API_CURRENT_PAGE            = API.PROTOCOL_INSECURE + '://' + API_DOMAIN + '/'
 
-    HEADER_REFERRER     = 'http://static.ak.crunchyroll.com/flash/20130201144858.bd8118f7c58d1da788d88782497e30a4/StandardVideoPlayer.swf'
+    HEADER_REFERRER     = 'http://static.ak.crunchyroll.com/flash/' \
+        '20130201144858.bd8118f7c58d1da788d88782497e30a4/StandardVideoPlayer.swf'
     HEADER_ORIGIN       = 'http://static.ak.crunchyroll.com'
     HEADER_USER_AGENT   = ANDROID.USER_AGENT
 
