@@ -2,49 +2,78 @@ python-crunchyroll
 ==================
 
 Python interface to Crunchyroll's undocumented APIs and utilities
-for working with the returned data.
+for working with the returned data. Eventual plan is to create a better
+XMBC plugin.
 
 ### Requirements
 
+  * Python 2.6+
   * requests
   * PyCrypto
 
 ### Usage
 
-Currently works for logging in and listing series/episodes. Video file URLs can
-also be found but they are hard-subbed and no subtitle files are available yet
-via the API.
+Pretty much anything of interest is available now, including the RTMPE stream
+data and decrypted and formatted subtitles.
 
 Example usage:
 ~~~~
->>> import crunchyroll.api
->>> api = crunchyroll.api.AndroidApi()
->>> session_data = api.start_session()
->>> from crunchyroll.constants import *
->>> series_list = api.list_series(media_type=CR_MEDIA_TYPE_ANIME)
->>> pprint([s['name'] for s in series_list])
-[u'Naruto Shippuden',
- u'NARUTO Spin-Off: Rock Lee & His Ninja Pals',
- u'Kotoura-San',
- u'Magi',
- u'Gintama',
- u'Space Brothers',
- u'Hunter x Hunter',
- u'Shin Sekai Yori (From the New World)',
- u'Maoyu',
- u'Ixion Saga DT',
- u'Cardfight!! Vanguard Link Joker (Season 3)',
- u'Chihayafuru',
- u'Hakkenden: Eight Dogs of the East',
- u'Fairy Tail',
- u'Folktales from Japan',
- u'Saint Seiya Omega',
- u'Polar Bear Cafe',
- u"Wooser's Hand-to-Mouth Life",
- u'Blast of Tempest',
- u'The Pet Girl of Sakurasou']
+>>> from crunchyroll.apis.meta import MetaApi
+>>> api = MetaApi()
+>>> pprint([s.name for s in api.list_anime_series(limit=5)])
+[u'07 Ghost',
+ u'11eyes',
+ u'A Bridge to the Starry Skies - Hoshizora e Kakaru Hashi',
+ u'A Dark Rabbit has Seven Lives',
+ u'Abunai Sisters']
+>>> space_brothers = api.search_anime_series('Space Brothers')[0]
+>>> pprint(space_brothers.description)
+u'To follow his brother Hibito to the moon, Mutta will attempt to become an
+astronaut at the age of 32.  Unaware of his own talent, Mutta chases his
+dreams to get back in front of his younger brother.'
+>>> sb_episodes = api.list_media(space_brothers)
+>>> len(sb_episodes)
+49
+>>> ep = [e for e in sb_episodes if e.episode_number == '40'][0]
+>>> print ep.episode_number, ep.name, ep.free_available
+40 Heaven and Hell True
+>>> api.login(username=username, password=password)
+True
+>>> stream = api.get_media_stream(ep)
+>>> subs = stream.default_subtitles.decrypt().get_ass_formatted()
+>>> print '\n'.join(subs.split('\n')[:9])
+[Script Info]
+Title: English (US)
+ScriptType: v4.00+
+WrapStyle: 0
+PlayRexX: 704
+PlayResY: 400
+Subtitle ID: XXXXX
+Language: English (US)
+Created: 28 days ago
+>>> [s.language for s in stream.subtitle_stubs]
+['English (US)', u'Espa\xf1ol', u'Fran\xe7ais (France)', u'Portugu\xeas (Brasil)']
+>>> fr_subs = api.unfold_subtitle_stub(stream.subtitle_stubs[2]).decrypt().get_srt_formatted()
+>>> print '\n'.join(fr_subs.split('\n')[:11])
+1
+00:00:00,760 --> 00:00:02,940
+Tiens ? Ça ne s'ouvre pas.
+
+2
+00:00:04,500 --> 00:00:06,770
+Tourne le levier vers la gauche.
+
+3
+00:00:07,360 --> 00:00:10,150
+Lequel ?
 ~~~~
+
+### TODO
+
+  * Add a way to get the URL to the latest version of the player SWF
+  * Add logging via logging module
+  * Add unit tests
 
 ### LICENSE
 
-This project is licensed under GPLv2+.
+This project is licensed under GPLv2+, see LICENSE for more details.

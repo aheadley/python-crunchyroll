@@ -251,7 +251,7 @@ class MetaApi(ApiInterface):
         result = self._android_api.list_media(**params)
         return result
 
-    @require_ajax_logged_in
+    # @require_ajax_logged_in
     def get_media_stream(self, media_item, format=META.VIDEO.FORMAT_480P,
             quality=META.VIDEO.QUALITY_MID):
         """Get the stream data for a given media item
