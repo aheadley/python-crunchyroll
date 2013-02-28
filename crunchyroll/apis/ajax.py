@@ -112,6 +112,22 @@ class AjaxApi(ApiInterface):
         return req_func()
 
     @make_ajax_api_method(METHOD_POST)
+    def Subtitle_GetListing(self, req_func):
+        """
+        @param int media_id
+        """
+        return req_func()
+
+    @make_ajax_api_method(METHOD_POST)
+    def VideoEncode_GetStreamInfo(self, req_func):
+        """
+        @param int video_encode_quality
+        @param int video_format
+        @param int media_id
+        """
+        return req_func()
+
+    @make_ajax_api_method(METHOD_POST)
     def VideoPlayer_GetStandardConfig(self, req_func):
         """
         @param int media_id
@@ -126,4 +142,30 @@ class AjaxApi(ApiInterface):
 
     @make_ajax_api_method(METHOD_POST)
     def VideoPlayer_GetChromelessConfig(self, req_func):
+        """
+        @param int media_id
+        """
+        return req_func()
+
+    @make_ajax_api_method(METHOD_POST)
+    def VideoPlayer_GetMediaMetadata(self, req_func):
+        """
+        @param int media_id
+        @param str video_format
+        @param str video_encode_quality
+        """
+        return req_func()
+
+    @make_ajax_api_method(METHOD_GET)
+    def VideoPlayer_GetAutoAdvanceTarget(self, req_func):
+        """
+        @param int media_id
+        """
+        return req_func()
+
+    @make_ajax_api_method(METHOD_POST)
+    def Media_GetRecommendedMedia(self, req_func):
+        """
+        @param int media_id
+        """
         return req_func()
