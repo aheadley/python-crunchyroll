@@ -19,6 +19,7 @@
 import math
 import hashlib
 import zlib
+import re
 
 try:
     from crypto.cipher.aes_cbc import AES_CBC
@@ -142,50 +143,148 @@ class SubtitleFormatter(object):
     """Base subtitle formatter class
     """
 
-    def format(self, sub_xml_text):
+    def format_subtitle(self, styled_subtitle):
+
+
+    def format(self, subtitles):
         """Turn a string containing the subs xml document into the formatted
         subtitle string
 
-        @param str sub_xml_text
+        @param str|crunchyroll.models.StyledSubtitle sub_xml_text
         @return str
         """
 
-        xml_doc = minidom_parseString(sub_xml_text)
-        return self._format(xml_doc)
+        return self._format(subtitles).encode('utf-8')
 
-    def _format(self, sub_xml_doc):
+    def _format(self, styled_subtitle):
         """Do the actual formatting on the parsed xml document, should be
         overridden by subclasses
 
-        @param xml.dom.Document sub_xml_doc
+        @param crunchyroll.models.StyledSubtitle styled_subtitle
         @return str
         """
         raise NotImplemented
 
-class ASSFormatter(SubtitleFormatter):
-    """Subtitle formatter for ASS format
+class ASS4Formatter(SubtitleFormatter):
+    """Subtitle formatter for ASS v4 format
     """
 
-    def _format(self, sub_xml_doc):
-        pass
+    STYLE_HEADER    = u'[V4 Styles]'
+    STYLE_KEYS      = u'Format: Name, Fontname, Fontsize, PrimaryColour, ' \
+        'SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, ' \
+        'StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, ' \
+        'Shadow, Alignment, MarginL, MarginR, MarginV, Encoding'
+    STYLE_FORMAT    = u'Style: {name}, {font_name}, {font_size}, {primary_colour}, ' \
+        '{secondary_colour}, {outline_colour}, {back_colour}, {bold}, {italic}, ' \
+        '{underline}, {strikeout}, {scale_x}, {scale_y}, {spacing}, {angle}, ' \
+        '{border_style}, {outline}, {shadow}, {alignment}, {margin_l}, ' \
+        '{margin_r}, {margin_v}, {encoding}'
+
+    EVENT_HEADER    = u'[Events]'
+    EVENT_KEYS      = u'Format: Layer, Start, End, Style, Name, MarginL, ' \
+        'MarginR, MarginV, Effect, Text'
+    EVENT_FORMAT    = u'Dialogue: 0,{start},{end},{style},{name},{margin_l},' \
+        '{margin_r},{margin_v},{effect},{text}'
+
+    def _format(self, styled_subtitle):
+        return '\n'.join([
+            self._format_header(styled_subtitle),
+            self._format_styles(styled_subtitle.findall('.//styles/style')),
+            self._format_events(styled_subtitle.findall('.//events/event')),
+        ])
+
+    def _format_header(self, subtitle_element):
+        header = u"""[Script Info]
+Title: {title}
+ScriptType: v4.00
+WrapStyle: {wrap_style}
+PlayRexX: {play_res_x}
+PlayResY: {play_res_y}
+Subtitle ID: {id}
+Language: {lang_string}
+Created: {created}
+"""
+        return header.format(**subtitle_element._data.attrib)
+
+    def _format_styles(self, style_elements):
+        style = '\n'.join([
+            self.STYLE_HEADER,
+            self.STYLE_KEYS,
+            '\n'.join(self._format_style(style) \
+                for style in style_elements),
+        ])
+        return style + '\n'
 
     def _format_style(self, style_element):
-        pass
+        attrs = style_element._data.attrib.copy()
+        for (k, v) in attrs.iteritems():
+            # wikipedia suggests that v4 uses b10, while v4+ uses b16
+            if v.startswith('&H'):
+                attrs[k] = int(v[2:], 16)
+        return self.STYLE_FORMAT.format(**attrs)
+
+    def _format_events(self, event_elements):
+        event_elements.sort(key=lambda e: int(e.id))
+        events = '\n'.join([
+            self.EVENT_HEADER,
+            self.EVENT_KEYS,
+            '\n'.join(self._format_event(event) \
+                for event in event_elements),
+        ])
+        return events + '\n'
 
     def _format_event(self, event_element):
-        pass
+        return self.EVENT_FORMAT.format(**event_element._data.attrib)
+
+class ASS4plusFormatter(ASS4Formatter):
+    """Subtitle formatter for ASS v4+ format
+    """
+
+    STYLE_HEADER    = u'[V4+ Styles]'
+
+    def _format_header(self, subtitle_element):
+        header = u"""[Script Info]
+Title: {title}
+ScriptType: v4.00+
+WrapStyle: {wrap_style}
+PlayRexX: {play_res_x}
+PlayResY: {play_res_y}
+Subtitle ID: {id}
+Language: {lang_string}
+Created: {created}
+"""
+        return header.format(**subtitle_element._data.attrib)
+
+    def _format_style(self, style_element):
+        return self.STYLE_FORMAT.format(**style_element._data.attrib)
 
 class SRTFormatter(SubtitleFormatter):
     """Subtitle formatter for SRT (unstyled) format
     """
 
-    def _format(self, sub_xml_doc):
-        # TODO: finish this
+    ASS_CMD_PATTERN = re.compile(r'{[^}]+}')
+    ASS_NEWLINE_PATTERN = re.compile(r'(?:\\n|\\N)')
+
+    def _format(self, styled_subtitle):
+        events = styled_subtitle.findall('.//events/event')
+        events.sort(key=lambda e: e.id)
         return '\n\n'.join(self._format_event(idx, event) \
-            for idx, event in enumerate(sorted(events)))
+            for idx, event in enumerate(events, 1)) + '\n'
 
     def _format_event(self, index, event):
-        pass
+        return '\n'.join([
+            str(index),
+            '{0} --> {1}'.format(
+                self._format_timestamp(event.start),
+                self._format_timestamp(event.end)),
+            self._format_event_text(event),
+        ])
+
+    def _format_event_text(self, event):
+        text = event._data.attrib.get('text')
+        text = self.ASS_CMD_PATTERN.sub('', text)
+        text = self.ASS_NEWLINE_PATTERN.sub('', text)
+        return text
 
     def _format_timestamp(self, timestamp):
         """Format timestamp to what SRT wants
@@ -195,6 +294,5 @@ class SRTFormatter(SubtitleFormatter):
         @param str timestamp
         @return str
         """
-        # TODO: milliseconds are wrong, should be left-justified
-        return '{0:02d}:{1:02d}:{2:02d},{3:03d}'.format(
+        return '{0:02d}:{1:02d}:{2:02d},{3:02d}0'.format(
             *map(int, timestamp.replace('.', ':').split(':')))
