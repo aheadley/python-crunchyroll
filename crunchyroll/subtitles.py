@@ -143,9 +143,6 @@ class SubtitleFormatter(object):
     """Base subtitle formatter class
     """
 
-    def format_subtitle(self, styled_subtitle):
-
-
     def format(self, subtitles):
         """Turn a string containing the subs xml document into the formatted
         subtitle string
@@ -262,7 +259,7 @@ class SRTFormatter(SubtitleFormatter):
     """Subtitle formatter for SRT (unstyled) format
     """
 
-    ASS_CMD_PATTERN = re.compile(r'{[^}]+}')
+    ASS_CMD_PATTERN     = re.compile(r'{[^}]+}')
     ASS_NEWLINE_PATTERN = re.compile(r'(?:\\n|\\N)')
 
     def _format(self, styled_subtitle):
