@@ -148,6 +148,11 @@ class MediaStream(XmlModel):
         return data
 
     @property
+    def duration(self):
+        return float(self.findfirst(
+            './/{default}preload/stream_info/metadata/duration').text)
+
+    @property
     def default_subtitles(self):
         return Subtitle(self.findfirst('.//{default}preload/subtitle'))
 
