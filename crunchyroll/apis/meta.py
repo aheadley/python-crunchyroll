@@ -45,7 +45,7 @@ def require_android_logged_in(func):
     @require_session_started
     def inner_func(self, *pargs, **kwargs):
         if not self._android_api.logged_in:
-            if self._state['username'] is None or self._state['password'] is None:
+            if not self.has_credentials:
                 raise ApiLoginFailure(
                     'Login is required but no credentials were provided')
             self._android_api.login(account=self._state['username'],
@@ -59,9 +59,20 @@ def require_ajax_logged_in(func):
     @functools.wraps(func)
     def inner_func(self, *pargs, **kwargs):
         if not self._ajax_api.logged_in:
-            if self._state['username'] is None or self._state['password'] is None:
+            if not self.has_credentials:
                 raise ApiLoginFailure(
                     'Login is required but no credentials were provided')
+            self._ajax_api.User_Login(name=self._state['username'],
+                password=self._state['password'])
+        return func(self, *pargs, **kwargs)
+    return inner_func
+
+def optional_ajax_logged_in(func):
+    """Check if ajax API is logged in and login if credentials available
+    """
+    @functools.wraps(func)
+    def inner_func(self, *pargs, **kwargs):
+        if not self._ajax_api.logged_in and self.has_credentials:
             self._ajax_api.User_Login(name=self._state['username'],
                 password=self._state['password'])
         return func(self, *pargs, **kwargs)
@@ -89,6 +100,11 @@ class MetaApi(ApiInterface):
     @property
     def logged_in(self):
         return self._ajax_api.logged_in and self._android_api.logged_in
+
+    @property
+    def has_credentials(self):
+        return self._state['username'] is not None and \
+            self._state['password'] is not None
 
     def get_state(self):
         return json.dumps({
@@ -251,8 +267,8 @@ class MetaApi(ApiInterface):
         result = self._android_api.list_media(**params)
         return result
 
-    # @require_ajax_logged_in
-    def get_media_stream(self, media_item, format=META.VIDEO.FORMAT_480P,
+    @optional_ajax_logged_in
+    def get_media_stream(self, media_item, format=META.VIDEO.FORMAT_720P,
             quality=META.VIDEO.QUALITY_MID):
         """Get the stream data for a given media item
 

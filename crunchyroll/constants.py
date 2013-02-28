@@ -59,6 +59,9 @@ class ANDROID(API):
     FILTER_NEWEST       = 'newest'
     FILTER_PREFIX       = 'prefix:' # search maybe?
     FILTER_TAG          = 'tag:' # need to find a list of tags
+    # media listing must use one of these
+    FILTER_ASC          = 'asc'
+    FILTER_DESC         = 'desc'
 
     class FIELD:
         # these are apparently like database fields or something that you can add
@@ -137,12 +140,14 @@ class META(API):
     TYPE_ANIME          = ANDROID.MEDIA_TYPE_ANIME
     TYPE_DRAMA          = ANDROID.MEDIA_TYPE_DRAMA
 
+    # sorting for series lists
     SORT_POPULAR        = ANDROID.FILTER_POPULAR
     SORT_SIMULCAST      = ANDROID.FILTER_SIMULCAST
     SORT_UPDATED        = ANDROID.FILTER_UPDATED
     SORT_ALPHA          = ANDROID.FILTER_ALPHA
     SORT_NEWEST         = ANDROID.FILTER_NEWEST
-    SORT_DESC           = 'desc'
-    SORT_ASC            = 'asc'
+    # sorting for media lists
+    SORT_ASC            = ANDROID.FILTER_ASC
+    SORT_DESC           = ANDROID.FILTER_DESC
 
     VIDEO = AJAX.VIDEO
