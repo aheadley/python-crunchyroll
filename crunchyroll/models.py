@@ -141,6 +141,11 @@ class StyledSubtitle(XmlModel):
 
 class MediaStream(XmlModel):
     @property
+    def is_upsell(self):
+        # return bool(self['upsell'])
+        return bool(self._data.findall('.//{default}preload/stream_info/upsell'))
+
+    @property
     def rtmp_data(self):
         data = {
             'url':         self.findfirst(

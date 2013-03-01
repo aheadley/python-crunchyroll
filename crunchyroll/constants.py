@@ -118,19 +118,25 @@ class AJAX(API):
     class VIDEO:
         FORMAT_1080P        = 108
         FORMAT_720P         = 106
-        FORMAT_480P         = 102
+        FORMAT_480P         = 106
+        FORMAT_360P         = 106
+        FORMAT_240P         = 102
+
+        QUALITY_1080P       = 80
+        QUALITY_720P        = 62
+        QUALITY_480P        = 61
+        QUALITY_360P        = 60
+        QUALITY_240P        = 20
 
         FORMATS             = {
-            '1080p':    FORMAT_1080P,
-            '720p':     FORMAT_720P,
-            '480p':     FORMAT_480P,
+            '1080p':    (FORMAT_1080P, QUALITY_1080P),
+            '720p':     (FORMAT_720P, QUALITY_720P),
+            '480p':     (FORMAT_480P, QUALITY_480P),
+            '360p':     (FORMAT_360P, QUALITY_360P),
+            # '240p':     (FORMAT_240P, QUALITY_240P),
         }
 
-        QUALITY_MAX         = 100
-        QUALITY_HIGH        = 80
-        QUALITY_MID         = 60
-        QUALITY_LOW         = 20
-        QUALITY_MIN         = 10
+        FORMAT_PARAMS       = dict((k, k[-1]+k[:-1]) for k in FORMATS)
 
 class META(API):
     MAX_SERIES          = 500

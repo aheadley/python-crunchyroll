@@ -268,8 +268,8 @@ class MetaApi(ApiInterface):
         return result
 
     @optional_ajax_logged_in
-    def get_media_stream(self, media_item, format=META.VIDEO.FORMAT_720P,
-            quality=META.VIDEO.QUALITY_MID):
+    def get_media_stream(self, media_item, format=META.VIDEO.FORMAT_360P,
+            quality=META.VIDEO.QUALITY_360P):
         """Get the stream data for a given media item
 
         @param crunchyroll.models.Media media_item
