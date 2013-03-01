@@ -139,13 +139,20 @@ class StyledSubtitle(XmlModel):
         formatter = SRTFormatter()
         return formatter.format(self)
 
-class MediaStream(XmlModel):
+def require_not_upsell(func):
+    def inner_func(self, *pargs, **kwargs):
+        if not self.is_upsell:
+            return func(self, *pargs, **kwargs)
+        else:
+            return None
+
+class StreamInfo(XmlModel):
     @property
     def is_upsell(self):
-        # return bool(self['upsell'])
-        return bool(self._data.findall('.//{default}preload/stream_info/upsell'))
+        return bool(self['upsell'])
 
     @property
+    @require_not_upsell
     def rtmp_data(self):
         data = {
             'url':         self.findfirst(
@@ -160,9 +167,24 @@ class MediaStream(XmlModel):
         return data
 
     @property
+    @require_not_upsell
     def duration(self):
         return float(self.findfirst(
             './/{default}preload/stream_info/metadata/duration').text)
+
+    @property
+    @require_not_upsell
+    def resolution(self):
+        width = self.findfirst(
+            '//{default}preload/stream_info/metadata/width').text
+        height = self.findfirst(
+            '//{default}preload/stream_info/metadata/height').text
+        return (int(width), int(height))
+
+class MediaStream(XmlModel):
+    @property
+    def stream_info(self):
+        return StreamInfo(self._data.findall('.//{default}preload/stream_info')[0])
 
     @property
     def default_subtitles(self):

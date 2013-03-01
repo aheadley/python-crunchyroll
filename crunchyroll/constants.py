@@ -137,7 +137,7 @@ class AJAX(API):
         }
 
         FORMAT_PARAMS       = dict((k, k[-1]+k[:-1]) for k in FORMATS)
-        PATTERN = r'swfobject.embedSWF.*express_install.swf\',(.*),loadBrandedPlayerAd.*'
+        PATTERN = r'swfobject\.embedSWF.*express_install\.swf\',(.*),loadBrandedPlayerAd.*'
 
 class META(API):
     MAX_SERIES          = 500
