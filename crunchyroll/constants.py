@@ -22,7 +22,7 @@ class API:
     PROTOCOL_INSECURE   = 'http'
     PROTOCOL_SECURE     = 'https'
 
-    LOG_FORMAT          = '%(asctime)s %(name)s[%(levelname)s]: %(message)s'
+    LOG_FORMAT          = '%(asctime)s - %(levelname)s - [%(name)s] %(message)s'
 
 class ANDROID(API):
     ACCESS_TOKEN                = '1M8BbXptBS4VhMP'
