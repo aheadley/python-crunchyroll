@@ -196,7 +196,7 @@ class MetaApi(ApiInterface):
     @require_session_started
     @return_collection(Series)
     def search_anime_series(self, query_string):
-        """Search anime series list by series name
+        """Search anime series list by series name, case-sensitive
 
         @param str query_string     string to search for, note that the search
                                         is very simplistic and only matches against
@@ -213,7 +213,7 @@ class MetaApi(ApiInterface):
     @require_session_started
     @return_collection(Series)
     def search_drama_series(self, query_string):
-        """Search drama series list by series name
+        """Search drama series list by series name, case-sensitive
 
         @param str query_string     string to search for, note that the search
                                         is very simplistic and only matches against
@@ -253,7 +253,7 @@ class MetaApi(ApiInterface):
     @require_session_started
     @return_collection(Media)
     def search_media(self, series, query_string):
-        """Search for media from a series starting with query_string
+        """Search for media from a series starting with query_string, case-sensitive
 
         @param crunchyroll.models.Series series     the series to search in
         @param str query_string                     the search query, same restrictions
@@ -268,8 +268,8 @@ class MetaApi(ApiInterface):
         return result
 
     @optional_ajax_logged_in
-    def get_media_stream(self, media_item, format=META.VIDEO.FORMAT_720P,
-            quality=META.VIDEO.QUALITY_MID):
+    def get_media_stream(self, media_item, format=META.VIDEO.FORMAT_360P,
+            quality=META.VIDEO.QUALITY_360P):
         """Get the stream data for a given media item
 
         @param crunchyroll.models.Media media_item
@@ -282,6 +282,20 @@ class MetaApi(ApiInterface):
             video_format=format,
             video_quality=quality)
         return MediaStream(result)
+
+    @optional_ajax_logged_in
+    def get_stream_info(self, media_item, format=META.VIDEO.FORMAT_360P,
+            quality=META.VIDEO.QUALITY_360P):
+        result = self._ajax_api.VideoEncode_GetStreamInfo(
+            media_id=media_item.media_id,
+            video_format=format,
+            video_encode_quality=quality)
+        return StreamInfo(result)
+
+    @return_collection(SubtitleStub)
+    def get_subtitle_stubs(self, media_item):
+        result = self._ajax_api.Subtitle_GetListing(media_id=media_item.media_id)
+        return XmlModel(result)['subtitle']
 
     def unfold_subtitle_stub(self, subtitle_stub):
         """Turn a SubtitleStub into a full Subtitle object
