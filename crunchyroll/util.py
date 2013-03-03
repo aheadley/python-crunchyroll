@@ -44,6 +44,9 @@ def return_collection(collection_type):
 def parse_xml_string(xml_string):
     return ET.fromstring(xml_string)
 
+def xml_node_to_string(xml_node):
+    return ET.tostring(xml_node)
+
 def format_rtmpdump_args(rtmp_data):
     arg_string = '-r {url} -W {swf_url} -T {token} -y {file} ' \
         '-p {page_url} -t {url}'

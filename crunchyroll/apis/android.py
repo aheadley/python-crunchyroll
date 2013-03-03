@@ -84,6 +84,7 @@ class AndroidApi(ApiInterface):
             'auth': None,
             'user': None,
         }
+        self._user_data = None
         # for debugging
         self._last_response = None
         # dunno what these are for yet, seems to be a way to tell the client
@@ -191,10 +192,22 @@ class AndroidApi(ApiInterface):
     def logged_in(self):
         return self._state_params['auth'] is not None
 
+    def is_premium(self, media_type):
+        """Get if the session is premium for a given media type
+
+        @param str media_type       Should be one of ANDROID.MEDIA_TYPE_*
+        @return bool
+        """
+        if self.logged_in:
+            if media_type in self._user_data['premium']:
+                return True
+        return False
+
     def get_state(self):
         state = {
             'state_params': self._state_params,
             'cookies': dict(self._connector.cookies),
+            'user_data': self._user_data,
         }
         return json.dumps(state)
 
@@ -202,6 +215,7 @@ class AndroidApi(ApiInterface):
         loaded_state = json.loads(state)
         self._state_params.update(loaded_state['state_params'])
         self._connector.cookies.update(loaded_state['cookies'])
+        self._user_data = loaded_state['user_data']
 
     @make_android_api_method(METHOD_POST, False)
     def start_session(self, response):
@@ -233,6 +247,7 @@ class AndroidApi(ApiInterface):
         @param int duration (optional)
         """
         self._state_params['auth'] = response['auth']
+        self._user_data = response['user']
         if not self.logged_in:
             raise ApiLoginFailure(response)
 
@@ -243,6 +258,7 @@ class AndroidApi(ApiInterface):
         automatically after logging in
         """
         self._state_params['auth'] = None
+        self._user_data = None
 
     @make_android_api_method(METHOD_POST)
     def authenticate(self, response):

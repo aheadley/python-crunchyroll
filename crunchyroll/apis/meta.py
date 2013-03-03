@@ -18,14 +18,18 @@
 
 import functools
 import json
+import logging
 
 from ..apis import ApiInterface
 from .android import AndroidApi
 from .ajax import AjaxApi
+from .scraper import ScraperApi
 from ..constants import META, AJAX, ANDROID
 from .errors import *
 from ..models import *
 from ..util import return_collection
+
+logger = logging.getLogger('crunchyroll.apis.meta')
 
 def require_session_started(func):
     """Check if API sessions are started and start them if not
@@ -33,6 +37,7 @@ def require_session_started(func):
     @functools.wraps(func)
     def inner_func(self, *pargs, **kwargs):
         if not self.session_started:
+            logger.info('Starting session for required meta method')
             self.start_session()
         return func(self, *pargs, **kwargs)
     return inner_func
@@ -45,9 +50,24 @@ def require_android_logged_in(func):
     @require_session_started
     def inner_func(self, *pargs, **kwargs):
         if not self._android_api.logged_in:
+            logger.info('Logging into android API for required meta method')
             if not self.has_credentials:
                 raise ApiLoginFailure(
                     'Login is required but no credentials were provided')
+            self._android_api.login(account=self._state['username'],
+                password=self._state['password'])
+        return func(self, *pargs, **kwargs)
+    return inner_func
+
+def optional_android_logged_in(func):
+    """Check if andoid API is logged in and login if credentials were provided,
+    implies `require_session_started`
+    """
+    @functools.wraps(func)
+    @require_session_started
+    def inner_func(self, *pargs, **kwargs):
+        if not self._android_api.logged_in and self.has_credentials:
+            logger.info('Logging into android API for optional meta method')
             self._android_api.login(account=self._state['username'],
                 password=self._state['password'])
         return func(self, *pargs, **kwargs)
@@ -59,6 +79,7 @@ def require_ajax_logged_in(func):
     @functools.wraps(func)
     def inner_func(self, *pargs, **kwargs):
         if not self._ajax_api.logged_in:
+            logger.info('Logging into AJAX API for required meta method')
             if not self.has_credentials:
                 raise ApiLoginFailure(
                     'Login is required but no credentials were provided')
@@ -73,6 +94,7 @@ def optional_ajax_logged_in(func):
     @functools.wraps(func)
     def inner_func(self, *pargs, **kwargs):
         if not self._ajax_api.logged_in and self.has_credentials:
+            logger.info('Logging into AJAX API for optional meta method')
             self._ajax_api.User_Login(name=self._state['username'],
                 password=self._state['password'])
         return func(self, *pargs, **kwargs)
@@ -120,6 +142,15 @@ class MetaApi(ApiInterface):
         self._ajax_api.set_state(decoded_state['ajax'])
         self._android_api.set_state(decoded_state['android'])
 
+    @optional_android_logged_in
+    def is_premium(self, media_type):
+        """Get if the user is premium for a given media type
+
+        @param str media_type       should be one of ANDROID.MEDIA_TYPE_*
+        @return bool
+        """
+        return self._android_api.is_premium(media_type)
+
     def start_session(self):
         """Start the underlying APIs sessions
 
@@ -155,7 +186,7 @@ class MetaApi(ApiInterface):
         self._state['password'] = password
         return self.logged_in
 
-    @require_session_started
+    @optional_android_logged_in
     @return_collection(Series)
     def list_anime_series(self, sort=META.SORT_ALPHA, limit=META.MAX_SERIES, offset=0):
         """Get a list of anime series
@@ -174,7 +205,7 @@ class MetaApi(ApiInterface):
             offset=offset)
         return result
 
-    @require_session_started
+    @optional_android_logged_in
     @return_collection(Series)
     def list_drama_series(self, sort=META.SORT_ALPHA, limit=META.MAX_SERIES, offset=0):
         """Get a list of drama series
@@ -193,7 +224,7 @@ class MetaApi(ApiInterface):
             offset=offset)
         return result
 
-    @require_session_started
+    @optional_android_logged_in
     @return_collection(Series)
     def search_anime_series(self, query_string):
         """Search anime series list by series name, case-sensitive
@@ -210,7 +241,7 @@ class MetaApi(ApiInterface):
             filter=ANDROID.FILTER_PREFIX + query_string)
         return result
 
-    @require_session_started
+    @optional_android_logged_in
     @return_collection(Series)
     def search_drama_series(self, query_string):
         """Search drama series list by series name, case-sensitive
@@ -227,7 +258,7 @@ class MetaApi(ApiInterface):
             filter=ANDROID.FILTER_PREFIX + query_string)
         return result
 
-    @require_session_started
+    @optional_android_logged_in
     @return_collection(Media)
     def list_media(self, series, sort=META.SORT_DESC, limit=META.MAX_MEDIA, offset=0):
         """List media for a given series or collection
@@ -250,7 +281,7 @@ class MetaApi(ApiInterface):
         result = self._android_api.list_media(**params)
         return result
 
-    @require_session_started
+    @optional_android_logged_in
     @return_collection(Media)
     def search_media(self, series, query_string):
         """Search for media from a series starting with query_string, case-sensitive
@@ -268,8 +299,7 @@ class MetaApi(ApiInterface):
         return result
 
     @optional_ajax_logged_in
-    def get_media_stream(self, media_item, format=META.VIDEO.FORMAT_360P,
-            quality=META.VIDEO.QUALITY_360P):
+    def get_media_stream(self, media_item, format, quality):
         """Get the stream data for a given media item
 
         @param crunchyroll.models.Media media_item
@@ -284,8 +314,7 @@ class MetaApi(ApiInterface):
         return MediaStream(result)
 
     @optional_ajax_logged_in
-    def get_stream_info(self, media_item, format=META.VIDEO.FORMAT_360P,
-            quality=META.VIDEO.QUALITY_360P):
+    def get_stream_info(self, media_item, format, quality):
         result = self._ajax_api.VideoEncode_GetStreamInfo(
             media_id=media_item.media_id,
             video_format=format,
@@ -305,6 +334,17 @@ class MetaApi(ApiInterface):
         """
         return Subtitle(self._ajax_api.Subtitle_GetXml(
             subtitle_script_id=int(subtitle_stub.id)))
+
+    @optional_ajax_logged_in
+    def get_stream_formats(self, media_item):
+        """Get the available media formats for a given media item
+
+        @param crunchyroll.models.Media
+        @return dict
+        """
+        scraper = ScraperApi(self._ajax_api._connector)
+        formats = scraper.get_media_formats(media_item.media_id)
+        return formats
 
     @require_android_logged_in
     @return_collection(Series)

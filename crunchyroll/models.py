@@ -18,8 +18,9 @@
 
 import re
 import logging
+import functools
 
-from .util import parse_xml_string, return_collection
+from .util import parse_xml_string, return_collection, xml_node_to_string
 from .subtitles import SubtitleDecrypter, SRTFormatter, ASS4plusFormatter
 from .constants import META
 
@@ -140,6 +141,7 @@ class StyledSubtitle(XmlModel):
         return formatter.format(self)
 
 def require_not_upsell(func):
+    @functools.wraps(func)
     def inner_func(self, *pargs, **kwargs):
         if not self.is_upsell:
             return func(self, *pargs, **kwargs)
@@ -152,33 +154,30 @@ class StreamInfo(XmlModel):
         return bool(self['upsell'])
 
     @property
-    @require_not_upsell
     def rtmp_data(self):
         data = {
             'url':         self.findfirst(
-                './/{default}preload/stream_info/host').text,
+                './/host').text,
             'file':         self.findfirst(
-                './/{default}preload/stream_info/file').text,
+                './/file').text,
             'token':        self.findfirst(
-                './/{default}preload/stream_info/token').text,
+                './/token').text,
             'swf_url':      META.SWF_URL,
             'page_url':     META.PAGE_URL,
         }
         return data
 
     @property
-    @require_not_upsell
     def duration(self):
         return float(self.findfirst(
-            './/{default}preload/stream_info/metadata/duration').text)
+            './/metadata/duration').text)
 
     @property
-    @require_not_upsell
     def resolution(self):
         width = self.findfirst(
-            '//{default}preload/stream_info/metadata/width').text
+            '//metadata/width').text
         height = self.findfirst(
-            '//{default}preload/stream_info/metadata/height').text
+            '//metadata/height').text
         return (int(width), int(height))
 
 class MediaStream(XmlModel):

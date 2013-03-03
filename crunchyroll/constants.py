@@ -116,28 +116,23 @@ class AJAX(API):
     COOKIE_SESSID       = 'sess_id'
 
     class VIDEO:
-        FORMAT_1080P        = 108
-        FORMAT_720P         = 106
-        FORMAT_480P         = 106
-        FORMAT_360P         = 106
-        FORMAT_240P         = 102
+        FORMATS             = [
+            '1080p',
+            '720p',
+            '480p',
+            '360p',
+        ]
 
-        QUALITY_1080P       = 80
-        QUALITY_720P        = 62
-        QUALITY_480P        = 61
-        QUALITY_360P        = 60
-        QUALITY_240P        = 20
+class SCRAPER(API):
+    API_DOMAIN                  = 'www.' + API.BASE_DOMAIN
+    API_URL                     = '{protocol}://' + API_DOMAIN + '/'
 
-        FORMATS             = {
-            '1080p':    (FORMAT_1080P, QUALITY_1080P),
-            '720p':     (FORMAT_720P, QUALITY_720P),
-            '480p':     (FORMAT_480P, QUALITY_480P),
-            '360p':     (FORMAT_360P, QUALITY_360P),
-            # '240p':     (FORMAT_240P, QUALITY_240P),
-        }
+    class VIDEO(AJAX.VIDEO):
+        FORMAT_PARAMS       = dict((f, f[-1]+f[:-1]) for f in AJAX.VIDEO.FORMATS)
+        FORMAT_PATTERN      = r'swfobject\.embedSWF.*express_install\.swf\',' \
+            '.*video_format%3D(\d+).*video_quality%3D(\d+)%26.*,loadBrandedPlayerAd.*'
 
-        FORMAT_PARAMS       = dict((k, k[-1]+k[:-1]) for k in FORMATS)
-        PATTERN = r'swfobject\.embedSWF.*express_install\.swf\',(.*),loadBrandedPlayerAd.*'
+
 
 class META(API):
     MAX_SERIES          = 500
