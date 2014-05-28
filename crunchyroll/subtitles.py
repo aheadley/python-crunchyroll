@@ -22,13 +22,26 @@ import zlib
 import re
 import logging
 
+aes_decrypt = None
 try:
-    from crypto.cipher.aes_cbc import AES_CBC
-    from crypto.cipher.base import noPadding
-    _LEGACY_CRYPTO = True
-except ImportError:
     from Crypto.Cipher.AES import MODE_CBC, AESCipher
-    _LEGACY_CRYPTO = False
+
+    def aes_decrypt(key, iv, data):
+        aes = AESCipher(key, MODE_CBC, iv)
+        return aes.decrypt(data)
+except ImportError:
+    try:
+        from crypto.cipher.aes_cbc import AES_CBC
+        from crypto.cipher.base import noPadding
+
+        def aes_decrypt(key, iv, data):
+            aes = AES_CBC(key, padding=noPadding(), keySize=len(key))
+            return cipher.decrypt(iv + data)
+    except ImportError:
+        from .aes import decryptData
+
+        def aes_decrypt(key, iv, data):
+            return decryptData(key, iv + data)
 
 logger = logging.getLogger('crunchyroll.subtitles')
 
@@ -70,24 +83,8 @@ class SubtitleDecrypter(object):
         encryption_key = self._build_encryption_key(int(subtitle_id))
         logger.info('Decrypting subtitles with length (%d bytes), ID=%s and key=%r',
             len(encrypted_data), subtitle_id, encryption_key)
-        decryption_func = self._get_decryption_func(encryption_key, iv.decode('base64'))
-        return zlib.decompress(decryption_func(encrypted_data.decode('base64')))
-
-    def _get_decryption_func(self, encryption_key, iv):
-        """Get a function to do encryption based on the version of the pycrypto
-        module being used
-        """
-        logger.debug('Using legacy crypto: %r', _LEGACY_CRYPTO)
-        if _LEGACY_CRYPTO:
-            def decrypt_func(data):
-                cipher = AES_CBC(encryption_key, padding=noPadding(),
-                    keySize=len(encryption_key))
-                return cipher.decrypt(iv + data)
-        else:
-            def decrypt_func(data):
-                cipher = AESCipher(encryption_key, MODE_CBC, iv)
-                return cipher.decrypt(data)
-        return decrypt_func
+        return zlib.decompress(aes_decrypt(encryption_key, iv.decode('base64'),
+            encrypted_data.decode('base64')))
 
     def _build_encryption_key(self, subtitle_id, key_size=ENCRYPTION_KEY_SIZE):
         """Generate the encryption key for a given media item
