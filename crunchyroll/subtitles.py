@@ -22,28 +22,12 @@ import zlib
 import re
 import logging
 
-aes_decrypt = None
-try:
-    from Crypto.Cipher.AES import MODE_CBC, AESCipher
-
-    def aes_decrypt(key, iv, data):
-        aes = AESCipher(key, MODE_CBC, iv)
-        return aes.decrypt(data)
-except ImportError:
-    try:
-        from crypto.cipher.aes_cbc import AES_CBC
-        from crypto.cipher.base import noPadding
-
-        def aes_decrypt(key, iv, data):
-            aes = AES_CBC(key, padding=noPadding(), keySize=len(key))
-            return cipher.decrypt(iv + data)
-    except ImportError:
-        from .aes import decryptData
-
-        def aes_decrypt(key, iv, data):
-            return decryptData(key, iv + data)
+from tlslite.utils.cipherfactory import createAES
 
 logger = logging.getLogger('crunchyroll.subtitles')
+
+def aes_decrypt(key, iv, data):
+    return str(createAES(key, iv).decrypt(data))
 
 class SubtitleDecrypter(object):
     """Decrypt Crunchyroll's encrypted subtitle data
@@ -69,9 +53,11 @@ class SubtitleDecrypter(object):
         @param crunchyroll.models.Subtitle subtitle
         @return str
         """
-        return self.decrypt(subtitle.id, subtitle['iv'][0].text, subtitle['data'][0].text)
+        return self.decrypt(self._build_encryption_key(self.id),
+            subtitle['iv'][0].text.decode('base64'),
+            subtitle['data'][0].text.decode('base64'))
 
-    def decrypt(self, subtitle_id, iv, encrypted_data):
+    def decrypt(self, encryption_key, iv, encrypted_data):
         """Decrypt encrypted subtitle data
 
         @param int subtitle_id
@@ -80,11 +66,9 @@ class SubtitleDecrypter(object):
         @return str
         """
 
-        encryption_key = self._build_encryption_key(int(subtitle_id))
-        logger.info('Decrypting subtitles with length (%d bytes), ID=%s and key=%r',
-            len(encrypted_data), subtitle_id, encryption_key)
-        return zlib.decompress(aes_decrypt(encryption_key, iv.decode('base64'),
-            encrypted_data.decode('base64')))
+        logger.info('Decrypting subtitles with length (%d bytes), key=%r',
+            len(encrypted_data), encryption_key)
+        return zlib.decompress(aes_decrypt(encryption_key, iv, encrypted_data))
 
     def _build_encryption_key(self, subtitle_id, key_size=ENCRYPTION_KEY_SIZE):
         """Generate the encryption key for a given media item
