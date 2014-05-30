@@ -74,7 +74,7 @@ class XmlModel(object):
             return '<%s(%s)>' % (name, self.tag_name)
 
     def __str__(self):
-        return self.text
+        return self.text if self.text is not None else repr(self)
 
     __unicode__ = __str__
 
@@ -127,8 +127,10 @@ class Subtitle(XmlModel):
         self._decrypter = SubtitleDecrypter()
 
     def decrypt(self):
-        return StyledSubtitle(self._decrypter.decrypt(self.id,
-            self['iv'][0].text, self['data'][0].text))
+        return StyledSubtitle(self._decrypter.decrypt(
+            self._decrypter._build_encryption_key(int(self.id)),
+            self['iv'][0].text.decode('base64'),
+            self['data'][0].text.decode('base64')))
 
 class StyledSubtitle(XmlModel):
     def get_ass_formatted(self):
