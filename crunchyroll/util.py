@@ -18,6 +18,7 @@
 
 import logging
 import functools
+import pipes
 import xml.etree.ElementTree as ET
 try:
     from HTMLParser import HTMLParser
@@ -50,4 +51,4 @@ def xml_node_to_string(xml_node):
 def format_rtmpdump_args(rtmp_data):
     arg_string = '-r {url} -W {swf_url} -T {token} -y {file} ' \
         '-p {page_url} -t {url}'
-    return arg_string.format(**rtmp_data)
+    return arg_string.format(**dict([(k, pipes.quote(v)) for (k,v) in rtmp_data.items()]))
