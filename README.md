@@ -10,6 +10,7 @@ XMBC plugin.
   * Python 2.6+
   * requests
   * PyCrypto
+  * tlslite version 0.4.3 (`pip install tlslite===0.4.3`)
 
 ### Usage
 
