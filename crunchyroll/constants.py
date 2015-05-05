@@ -25,7 +25,7 @@ class API:
     LOG_FORMAT          = '%(asctime)s - %(levelname)s - [%(name)s] %(message)s'
 
 class ANDROID(API):
-    ACCESS_TOKEN                = '1M8BbXptBS4VhMP'
+    ACCESS_TOKEN                = 'Scwg9PRRZ19iVwD'
     API_DOMAIN                  = 'api.' + API.BASE_DOMAIN
     API_URL                     = '{protocol}://' + API_DOMAIN + '/' \
                                     '{api_method}.{version}.json'
