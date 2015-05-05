@@ -62,4 +62,14 @@ else:
 logger.setLevel(_log_level)
 logger.addHandler(_log_handler)
 
+# urllib3 gives annoying warnings when used with older python versions that don't
+# matter to us, so we disable them
+# @source https://urllib3.readthedocs.org/en/latest/security.html#insecureplatformwarning
+try:
+    import urllib3
+    urllib3.disable_warnings()
+    logger.info('Disabled urllib3 warnings')
+except Exception as err:
+    logger.info('Couldnt disable urllib3 warnings: %s', err)
+
 logger.debug('%s module init finished', __title__)
