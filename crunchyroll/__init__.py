@@ -38,27 +38,28 @@ __author_email__    = 'aheadley@waysaboutstuff.com'
 __license__         = 'GNU General Public License v2+'
 __copyright__       = 'Copyright 2013 Alex Headley'
 __url__             = 'https://github.com/aheadley/python-crunchyroll'
+__description__     = """
+A library to interface with Crunchyroll's various APIs and utilites to work
+with the returned data
+""".strip()
 
 # set default logging handler
 import os
 import logging
 
+from crunchyroll.util import NullHandler, LOG_FORMAT
+
 logger = logging.getLogger(__title__)
-logger.setLevel(logging.INFO)
-try:
-    logger.addHandler(logging.NullHandler())
-except AttributeError:
-    class NullHandler(logging.Handler):
-        def emit(self, record):
-            pass
-    logger.addHandler(NullHandler())
 
 if os.environ.get('CRUNCHYROLL_DEBUG', False):
-    from .constants import API
+    _log_handler = logging.StreamHandler()
+    _log_handler.setFormatter(LOG_FORMAT)
+    _log_level = logging.DEBUG
+else:
+    _log_handler = NullHandler()
+    _log_level = logging.WARN
 
-    handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter(API.LOG_FORMAT))
-    logger.addHandler(handler)
-    logger.setLevel(logging.DEBUG)
+logger.setLevel(_log_level)
+logger.addHandler(_log_handler)
 
-logger.debug('%s module init', __title__)
+logger.debug('%s module init finished', __title__)

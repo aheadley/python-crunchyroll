@@ -17,50 +17,48 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup, find_packages
 
 import crunchyroll
 
-packages = [
-    'crunchyroll',
-    'crunchyroll.apis',
-]
 
-classifiers = (
-    'Intended Audience :: Developers',
-    'Natural Language :: English',
-    'Programming Language :: Python',
-    'Programming Language :: Python :: 2.6',
-    'Programming Language :: Python :: 2.7',
-)
+with open('README.md') as readme:
+    long_description = readme.read()
 
-def format_requirement(req):
-    COMP_CHARS = '<>!='
-    try:
-        idx = min(req.find(c) for c in COMP_CHARS if req.find(c) > 0)
-    except ValueError:
-        return req
-    else:
-        return '%s (%s)' % (req[:idx], req[idx:])
+with open('requirements.txt') as reqs:
+    requirements = [line.strip() for line in reqs if line.strip()]
 
-raw_requirements = open('requirements.txt').read().strip()
-requirements = [format_requirement(req) for req in raw_requirements.split('\n')]
+SETUP_ARGS = {
+    # package metadata
+    'name':             crunchyroll.__title__,
+    'description':      crunchyroll.__description__,
+    'long_description': long_description,
+    'version':          crunchyroll.__version__,
+    'author':           crunchyroll.__author__,
+    'author_email':     crunchyroll.__author_email__,
+    'url':              crunchyroll.__url__,
 
-setup(
-    name='crunchyroll',
-    version=crunchyroll.__version__,
-    description='Library to interface with Crunchyroll\'s APIs',
-    long_description=open('README.md').read(),
-    author=crunchyroll.__author__,
-    author_email=crunchyroll.__author_email__,
-    url=crunchyroll.__url__,
-    packages=packages,
-    package_data={'': ['LICENSE']},
-    license=open('LICENSE').read(),
-    classifiers=classifiers,
-    provides=['crunchyroll'],
-    requires=requirements
-)
+    # pypi metadata
+    'license':          'GPLv2.0',
+    'platforms':        'any',
+    'install_requires': requirements,
+    'classifiers':      [
+        'Intended Audience :: Developers',
+        'Natural Language :: English',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+    ],
+
+    # setuptools info
+    'packages':         find_packages(),
+    'entry_points':     {
+        'console_scripts': [
+            'cr-dl-subs             = crunchyroll.scripts:download_subs',
+        ]
+    },
+    'test_suite':       'tests',
+}
+
+if __name__ == '__main__':
+    setup(**SETUP_ARGS)

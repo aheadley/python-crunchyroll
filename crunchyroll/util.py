@@ -52,3 +52,19 @@ def format_rtmpdump_args(rtmp_data):
     arg_string = '-r {url} -W {swf_url} -T {token} -y {file} ' \
         '-p {page_url} -t {url}'
     return arg_string.format(**dict([(k, pipes.quote(v)) for (k,v) in rtmp_data.items()]))
+
+# NullHandler was added in py2.7
+if hasattr(logging, 'NullHandler'):
+    NullHandler = logging.NullHandler
+else:
+    class NullHandler(logging.Handler):
+        def handle(self, record):
+            pass
+
+        def emit(self, record):
+            pass
+
+        def createLock(self):
+            self.lock = None
+
+LOG_FORMAT = logging.Formatter('[%(asctime)s] %(levelname)8s - %(name)s: %(message)s')

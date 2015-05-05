@@ -20,9 +20,9 @@ import re
 import logging
 import functools
 
-from .util import parse_xml_string, return_collection, xml_node_to_string
-from .subtitles import SubtitleDecrypter, SRTFormatter, ASS4plusFormatter
-from .constants import META
+from crunchyroll.util import parse_xml_string, return_collection, xml_node_to_string
+from crunchyroll.subtitles import SubtitleDecrypter, SRTFormatter, ASS4plusFormatter
+from crunchyroll.constants import META
 
 logger = logging.getLogger('crunchyroll.models')
 
