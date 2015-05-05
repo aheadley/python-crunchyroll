@@ -9,7 +9,7 @@ XMBC plugin.
 
   * Python 2.6+
   * requests
-  * PyCrypto
+  * tlslite
 
 ### Usage
 
