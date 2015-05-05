@@ -20,14 +20,14 @@ import functools
 import json
 import logging
 
-from ..apis import ApiInterface
-from .android import AndroidApi
-from .ajax import AjaxApi
-from .scraper import ScraperApi
-from ..constants import META, AJAX, ANDROID
-from .errors import *
-from ..models import *
-from ..util import return_collection
+from crunchyroll.apis import ApiInterface
+from crunchyroll.apis.android import AndroidApi
+from crunchyroll.apis.ajax import AjaxApi
+from crunchyroll.apis.scraper import ScraperApi
+from crunchyroll.constants import META, AJAX, ANDROID
+from crunchyroll.apis.errors import *
+from crunchyroll.models import *
+from crunchyroll.util import return_collection
 
 logger = logging.getLogger('crunchyroll.apis.meta')
 

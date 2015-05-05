@@ -19,9 +19,9 @@
 import re
 import json
 
-from ..apis import ApiInterface
-from ..constants import SCRAPER
-from .errors import *
+from crunchyroll.apis import ApiInterface
+from crunchyroll.constants import SCRAPER
+from crunchyroll.apis.errors import *
 
 class ScraperApi(ApiInterface):
     """Website scraper API

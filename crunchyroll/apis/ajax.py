@@ -21,9 +21,9 @@ import logging
 
 import requests
 
-from ..apis import ApiInterface
-from ..constants import AJAX
-from .errors import *
+from crunchyroll.apis import ApiInterface
+from crunchyroll.constants import AJAX
+from crunchyroll.apis.errors import *
 
 logger = logging.getLogger('crunchyroll.apis.ajax')
 
@@ -38,6 +38,7 @@ def make_ajax_api_method(req_method, secure=False):
                 response = func(self, req_func)
                 self._last_response = response
             except Exception as err: # TODO: make this more specific
+                logger.info('Caught exception of class: %s', err.__class__.__name__)
                 raise ApiNetworkException(err)
             if not (response.ok and response.headers['Content-Type'] == 'text/xml'):
                 raise ApiBadResponseException(response)

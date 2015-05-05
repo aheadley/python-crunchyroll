@@ -22,9 +22,9 @@ import logging
 
 import requests
 
-from ..apis import ApiInterface
-from ..constants import ANDROID
-from .errors import *
+from crunchyroll.apis import ApiInterface
+from crunchyroll.constants import ANDROID
+from crunchyroll.apis.errors import *
 
 logger = logging.getLogger('crunchyroll.apis.android')
 
