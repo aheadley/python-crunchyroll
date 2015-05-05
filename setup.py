@@ -52,11 +52,6 @@ SETUP_ARGS = {
 
     # setuptools info
     'packages':         find_packages(),
-    'entry_points':     {
-        'console_scripts': [
-            'cr-dl-subs             = crunchyroll.scripts:download_subs',
-        ]
-    },
     'test_suite':       'tests',
 }
 
