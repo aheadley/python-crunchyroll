@@ -25,6 +25,8 @@ try:
 except ImportError:
     from html.parser import HTMLParser
 
+logger = logging.getLogger('crunchyroll.util')
+
 # use a singleton parser
 _html_parser = HTMLParser()
 

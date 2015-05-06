@@ -16,6 +16,20 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import logging
+
+logger = logging.getLogger('crunchyroll.apis')
+
+# urllib3 gives annoying warnings when used with older python versions that don't
+# matter to us, so we disable them
+# @source https://urllib3.readthedocs.org/en/latest/security.html#insecureplatformwarning
+try:
+    import requests
+    requests.packages.urllib3.disable_warnings()
+    logger.info('Disabled urllib3 warnings')
+except Exception as err:
+    logger.info('Couldnt disable urllib3 warnings: %s', err)
+
 class ApiInterface(object):
     """This will be the basis for the shared API interfaces once the Ajax and
     Web APIs have been implemented
