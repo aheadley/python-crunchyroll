@@ -68,11 +68,15 @@ Tourne le levier vers la gauche.
 Lequel ?
 ~~~~
 
-### TODO
+### Testing
 
-  * Add a way to get the URL to the latest version of the player SWF
-  * Add logging via logging module
-  * Add unit tests
+Run the unit tests with:
+
+    $ python setup.py test
+
+Note that some of the unit tests will use a CR account which should be made
+available in the `CRUNCHYROLL_USERNAME` and `CRUNCHYROLL_PASSWORD` environment
+variables.
 
 ### LICENSE
 

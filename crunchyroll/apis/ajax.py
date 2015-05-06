@@ -37,8 +37,10 @@ def make_ajax_api_method(req_method, secure=False):
             try:
                 response = func(self, req_func)
                 self._last_response = response
+            except ApiLoginFailure as err:
+                raise err
             except Exception as err: # TODO: make this more specific
-                logger.info('Caught exception of class: %s', err.__class__.__name__)
+                logger.warn('Caught exception of class: %s', err.__class__.__name__)
                 raise ApiNetworkException(err)
             if not (response.ok and response.headers['Content-Type'] == 'text/xml'):
                 raise ApiBadResponseException(response)
