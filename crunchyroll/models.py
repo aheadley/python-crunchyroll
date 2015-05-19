@@ -43,6 +43,8 @@ class DictModel(object):
         except TypeError:
             return item
 
+    __getitem__ = __getattr__
+
     def __repr__(self):
         return '<%s(%s)>' % (self.__class__.__name__, repr(self._data))
 
@@ -100,6 +102,12 @@ class XmlModel(object):
             return None
 
 class Series(DictModel):
+    pass
+
+class Chapter(DictModel):
+    pass
+
+class Page(DictModel):
     pass
 
 class Media(DictModel):
