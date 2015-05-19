@@ -32,7 +32,7 @@ stderr
 """
 
 __title__           = 'crunchyroll'
-__version__         = '1.0.0'
+__version__         = '1.0.1'
 __author__          = 'Alex Headley'
 __author_email__    = 'aheadley@waysaboutstuff.com'
 __license__         = 'GNU General Public License v2+'

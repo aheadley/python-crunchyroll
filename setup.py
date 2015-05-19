@@ -21,12 +21,18 @@ from setuptools import setup, find_packages
 
 import crunchyroll
 
+try:
+    with open('README.md') as readme:
+        long_description = readme.read()
 
-with open('README.md') as readme:
-    long_description = readme.read()
-
-with open('requirements.txt') as reqs:
-    requirements = [line.strip() for line in reqs if line.strip()]
+    with open('requirements.txt') as reqs:
+        requirements = [line.strip() for line in reqs if line.strip()]
+except IOError:
+    long_description = crunchyroll.__description__
+    requirements = [
+        'requests',
+        'tlslite',
+    ]
 
 SETUP_ARGS = {
     # package metadata
