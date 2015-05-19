@@ -25,6 +25,8 @@ try:
 except ImportError:
     from html.parser import HTMLParser
 
+from crunchyroll.constants import ANDROID_MANGA
+
 logger = logging.getLogger('crunchyroll.util')
 
 # use a singleton parser
@@ -54,6 +56,11 @@ def format_rtmpdump_args(rtmp_data):
     arg_string = '-r {url} -W {swf_url} -T {token} -y {file} ' \
         '-p {page_url} -t {url}'
     return arg_string.format(**dict([(k, pipes.quote(v)) for (k,v) in rtmp_data.items()]))
+
+def decrypt_image_stream(image_handle, chunk_size=4 * 1024):
+    xor_mask = ANDROID_MANGA.XOR_MASK
+    for chunk in image_handle.iter_content(chunk_size):
+        yield str(bytearray(b ^ xor_mask for b in bytearray(chunk)))
 
 # NullHandler was added in py2.7
 if hasattr(logging, 'NullHandler'):

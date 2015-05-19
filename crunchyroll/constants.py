@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013  Alex Headley  <aheadley@waysaboutstuff.com>
@@ -23,6 +22,19 @@ class API:
     PROTOCOL_SECURE     = 'https'
 
     LOG_FORMAT          = '%(asctime)s - %(levelname)s - [%(name)s] %(message)s'
+
+class ANDROID_MANGA(API):
+    ACCESS_TOKEN                = 'FLpcfZH4CbW4muO'
+    GCM_SENDER_ID               = '894999989124'
+
+    API_DOMAIN                  = 'api-manga.' + API.BASE_DOMAIN
+    API_URL                     = '{protocol}://' + API_DOMAIN + '/{api_method}'
+
+    DEVICE_TYPE                 = 'com.crunchyroll.manga.android'
+    DEVICE_ID                   = '00000000-18c4-ade8-ffff-ffff99d603a9'
+    API_VER                     = '1.0'
+
+    XOR_MASK                    = 0x42
 
 class ANDROID(API):
     ACCESS_TOKEN                = 'Scwg9PRRZ19iVwD'
