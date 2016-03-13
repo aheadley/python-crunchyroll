@@ -25,6 +25,7 @@ import requests
 from crunchyroll.apis import ApiInterface
 from crunchyroll.constants import ANDROID_MANGA
 from crunchyroll.apis.errors import *
+from crunchyroll.util import iteritems
 
 logger = logging.getLogger('crunchyroll.apis.android_manga')
 
@@ -85,7 +86,7 @@ class AndroidMangaApi(ApiInterface):
         }
 
         base_params.update(dict((k, v) \
-            for k, v in self._state_params.iteritems() \
+            for k, v in iteritems(self._state_params) \
                 if v is not None))
 
         return base_params

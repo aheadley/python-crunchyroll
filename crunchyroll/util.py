@@ -20,10 +20,19 @@ import logging
 import functools
 import pipes
 import xml.etree.ElementTree as ET
+
 try:
     from HTMLParser import HTMLParser
 except ImportError:
     from html.parser import HTMLParser
+
+### Support itemitems() calls across versions
+try:
+    from six import iteritems
+except ImportError:
+    # from six: https://pythonhosted.org/six/
+    def iteritems(d, **kw):
+        return iter(d.items(**kw))
 
 from crunchyroll.constants import ANDROID_MANGA
 
