@@ -86,7 +86,7 @@ class XmlModel(object):
     __unicode__ = __str__
 
     def __getitem__(self, name):
-        return map(XmlModel, self.findall('./' + name))
+        return list(map(XmlModel, self.findall('./' + name)))
 
     @property
     def text(self):
@@ -97,7 +97,7 @@ class XmlModel(object):
         return self._data.tag
 
     def findall(self, query):
-        return map(XmlModel, self._data.findall(query))
+        return list(map(XmlModel, self._data.findall(query)))
 
     def findfirst(self, query):
         try:

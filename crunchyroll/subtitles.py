@@ -122,9 +122,9 @@ class SubtitleDecrypter(object):
         fbn_seq = list(seq_seed)
         for i in range(seq_len):
             fbn_seq.append(fbn_seq[-1] + fbn_seq[-2])
-        hash_secret = map(
+        hash_secret = list(map(
             lambda c: chr(c % mod_value + self.HASH_SECRET_CHAR_OFFSET),
-            fbn_seq[2:])
+            fbn_seq[2:]))
         return ''.join(hash_secret)
 
 class SubtitleFormatter(object):

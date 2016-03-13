@@ -51,7 +51,7 @@ def return_collection(collection_type):
         @functools.wraps(func)
         def inner_func(self, *pargs, **kwargs):
             result = func(self, *pargs, **kwargs)
-            return map(collection_type, result)
+            return list(map(collection_type, result))
         return inner_func
     return outer_func
 
