@@ -50,7 +50,11 @@ class DictModel(object):
 
 class XmlModel(object):
     def __init__(self, node):
-        if isinstance(node, basestring):
+        try:
+            is_basestring = isinstance(node, basestring)
+        except NameError:
+            is_basestring = isinstance(node, (bytes, str))
+        if is_basestring:
             try:
                 node = parse_xml_string(node)
             except Exception as err:
