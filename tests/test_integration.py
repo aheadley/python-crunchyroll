@@ -42,14 +42,15 @@ class TestIntegration(unittest.TestCase):
         with self.assertRaises(ApiLoginFailure):
             self.api.login(username='example-bad-username', password='example-bad-password')
 
-    def test_search(self):
+    def test_anime_search(self):
         self._series = self.api.search_anime_series('Space Brothers')[0]
         self.assertEqual('Space Brothers', self._series.name)
 
     def test_list_media(self):
+        self._series = self.api.search_anime_series('Space Brothers')[0]
         self._media = self.api.list_media(self._series)
         self.assertEqual(99, len([ep for ep in self._media if not ep.clip]))
-        self.assertEqual('Life Changes, Promises Don\'t')
+        self.assertEqual('Life Changes, Promises Don\'t', self._media[0].name)
 
 if __name__ == '__main__':
     unittest.main()
