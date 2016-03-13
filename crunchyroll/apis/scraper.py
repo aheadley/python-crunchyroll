@@ -44,7 +44,10 @@ class ScraperApi(ApiInterface):
             resp = self._connector.get(url, params={param: '1'})
             if not resp.ok:
                 continue
-            match = format_pattern.search(resp.content)
+            try:
+                match = format_pattern.search(resp.content)
+            except TypeError:
+                match = format_pattern.search(resp.text)
             if match:
                 formats[format] = (int(match.group(1)), int(match.group(2)))
         return formats
