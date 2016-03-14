@@ -50,7 +50,11 @@ class DictModel(object):
 
 class XmlModel(object):
     def __init__(self, node):
-        if isinstance(node, basestring):
+        try:
+            is_basestring = isinstance(node, basestring)
+        except NameError:
+            is_basestring = isinstance(node, (bytes, str))
+        if is_basestring:
             try:
                 node = parse_xml_string(node)
             except Exception as err:
@@ -82,7 +86,7 @@ class XmlModel(object):
     __unicode__ = __str__
 
     def __getitem__(self, name):
-        return map(XmlModel, self.findall('./' + name))
+        return list(map(XmlModel, self.findall('./' + name)))
 
     @property
     def text(self):
@@ -93,7 +97,7 @@ class XmlModel(object):
         return self._data.tag
 
     def findall(self, query):
-        return map(XmlModel, self._data.findall(query))
+        return list(map(XmlModel, self._data.findall(query)))
 
     def findfirst(self, query):
         try:

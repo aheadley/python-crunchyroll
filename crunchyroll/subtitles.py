@@ -23,6 +23,7 @@ import re
 import logging
 
 from tlslite.utils.cipherfactory import createAES
+from crunchyroll.util import iteritems
 
 logger = logging.getLogger('crunchyroll.subtitles')
 
@@ -121,9 +122,9 @@ class SubtitleDecrypter(object):
         fbn_seq = list(seq_seed)
         for i in range(seq_len):
             fbn_seq.append(fbn_seq[-1] + fbn_seq[-2])
-        hash_secret = map(
+        hash_secret = list(map(
             lambda c: chr(c % mod_value + self.HASH_SECRET_CHAR_OFFSET),
-            fbn_seq[2:])
+            fbn_seq[2:]))
         return ''.join(hash_secret)
 
 class SubtitleFormatter(object):
@@ -203,7 +204,7 @@ Created: {created}
 
     def _format_style(self, style_element):
         attrs = style_element._data.attrib.copy()
-        for (k, v) in attrs.iteritems():
+        for (k, v) in iteritems(attrs):
             # wikipedia suggests that v4 uses b10, while v4+ uses b16
             if v.startswith('&H'):
                 attrs[k] = int(v[2:], 16)

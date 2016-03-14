@@ -22,6 +22,7 @@ import json
 from crunchyroll.apis import ApiInterface
 from crunchyroll.constants import SCRAPER
 from crunchyroll.apis.errors import *
+from crunchyroll.util import iteritems
 
 class ScraperApi(ApiInterface):
     """Website scraper API
@@ -39,11 +40,14 @@ class ScraperApi(ApiInterface):
         format_pattern = re.compile(SCRAPER.VIDEO.FORMAT_PATTERN)
         formats = {}
 
-        for format, param in SCRAPER.VIDEO.FORMAT_PARAMS.iteritems():
+        for format, param in iteritems(SCRAPER.VIDEO.FORMAT_PARAMS):
             resp = self._connector.get(url, params={param: '1'})
             if not resp.ok:
                 continue
-            match = format_pattern.search(resp.content)
+            try:
+                match = format_pattern.search(resp.content)
+            except TypeError:
+                match = format_pattern.search(resp.text)
             if match:
                 formats[format] = (int(match.group(1)), int(match.group(2)))
         return formats
