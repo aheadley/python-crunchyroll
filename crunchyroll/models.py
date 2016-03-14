@@ -185,9 +185,9 @@ class StreamInfo(XmlModel):
     @property
     def resolution(self):
         width = self.findfirst(
-            '//metadata/width').text
+            './/metadata/width').text
         height = self.findfirst(
-            '//metadata/height').text
+            './/metadata/height').text
         return (int(width), int(height))
 
 class MediaStream(XmlModel):
