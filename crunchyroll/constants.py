@@ -112,6 +112,11 @@ class ANDROID(API):
         IMAGE_LARGE_URL             = 'image.large_url'
         IMAGE_FULL_URL              = 'image.full_url'
 
+class BOXEE(ANDROID):
+    ACCESS_TOKEN                = '3o5VhlhWQtQRsH0'
+    APP_PACKAGE                 = 'com.crunchyroll.boxee'
+    APP_VERSION_NAME            = '1.1'
+
 class AJAX(API):
     API_DOMAIN                  = 'www.' + API.BASE_DOMAIN
     API_URL                     = '{protocol}://' + API_DOMAIN + '/xml/'
