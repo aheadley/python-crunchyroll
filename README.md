@@ -1,6 +1,9 @@
 python-crunchyroll
 ==================
 
+**ABANDONED** I don't have a Crunchyroll account or any real interest in
+this package anymore
+
 Python interface to Crunchyroll's undocumented APIs and utilities
 for working with the returned data. Eventual plan is to create a better
 XMBC plugin.
